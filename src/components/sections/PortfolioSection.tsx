@@ -172,7 +172,6 @@ function DesktopFanCard({
   const idleX = isFirst ? "-15%" : isCenter ? "0%" : "15%";
   const idleY = index * 25;
   const idleRotate = isFirst ? -4 : isCenter ? 0 : 4;
-  const fanTransition = scaleMotionTransition(motionTransition, animationMultiplier);
 
   return (
     <motion.div

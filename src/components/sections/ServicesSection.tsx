@@ -7,7 +7,8 @@ import { BorderBeam } from "@/components/magicui/border-beam";
 import { SectionParallax } from "@/components/ui/section-parallax";
 import { content, type ServiceIcon } from "@/content/ru";
 import { useEasterEgg } from "@/context/EasterEggContext";
-import { GPU_LAYER } from "@/lib/performance";
+import { usePerformanceController } from "@/hooks/usePerformanceController";
+import { GPU_LAYER, scaleMotionTransition } from "@/lib/performance";
 
 const icons: Record<ServiceIcon, typeof Bot> = {
   bot: Bot,
@@ -24,6 +25,11 @@ const iconColors: Record<ServiceIcon, string> = {
 export function ServicesSection() {
   const { services } = content;
   const { isEasterEggActive, animationMultiplier } = useEasterEgg();
+  const { motionTransition } = usePerformanceController();
+  const cardTransition = scaleMotionTransition(
+    motionTransition,
+    animationMultiplier,
+  );
 
   return (
     <section id="features" className="relative z-10 mx-auto max-w-7xl px-4 py-24">
@@ -91,7 +97,7 @@ export function ServicesSection() {
                 delay: index * 0.15 * animationMultiplier,
                 ease: [0.4, 0, 0.2, 1],
               }}
-              whileHover={{ y: -6 }}
+              whileHover={{ y: -6, transition: cardTransition }}
               style={
                 {
                   "--glow-color": service.glowColor,

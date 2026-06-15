@@ -1,12 +1,13 @@
 "use client";
 
 import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useSpring } from "framer-motion";
+import { motion, useScroll, useSpring } from "framer-motion";
 import { GPU_LAYER } from "@/lib/performance";
 import { Cpu, SearchCode, ShieldCheck } from "lucide-react";
 
 import { content, type WorkflowIcon } from "@/content/ru";
 import { SectionParallax } from "@/components/ui/section-parallax";
+import { usePerformanceController } from "@/hooks/usePerformanceController";
 
 const icons: Record<WorkflowIcon, typeof SearchCode> = {
   searchCode: SearchCode,
@@ -23,7 +24,7 @@ const iconColors: Record<WorkflowIcon, string> = {
 export function WorkflowSection() {
   const { workflow } = content;
   const containerRef = useRef<HTMLDivElement>(null);
-  const prefersReducedMotion = useReducedMotion();
+  const { disableHeavyEffects, motionTransition } = usePerformanceController();
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -31,8 +32,8 @@ export function WorkflowSection() {
   });
 
   const scaleY = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 28,
+    stiffness: disableHeavyEffects ? 500 : 120,
+    damping: disableHeavyEffects ? 50 : 28,
     restDelta: 0.001,
   });
 
@@ -71,7 +72,7 @@ export function WorkflowSection() {
       <div className="relative inline-block w-full text-left">
         <div className="absolute bottom-0 left-4 top-0 w-[2px] -translate-x-1/2 bg-white/5 md:left-1/2" />
 
-        {!prefersReducedMotion && (
+        {!disableHeavyEffects && (
           <motion.div
             style={{ scaleY }}
             className={`absolute bottom-0 left-4 top-0 z-10 w-[3px] origin-top -translate-x-1/2 rounded-full bg-gradient-to-b from-purple-400 via-pink-500 to-cyan-400 shadow-[0_0_20px_rgba(168,85,247,0.7),0_0_40px_rgba(236,72,153,0.35)] md:left-1/2 ${GPU_LAYER}`}
@@ -96,6 +97,7 @@ export function WorkflowSection() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     viewport={{ once: true, margin: "-100px" }}
+                    transition={motionTransition}
                     className="h-4 w-4 rounded-full border-2 border-pink-500 bg-[#030712] shadow-[0_0_10px_rgba(236,72,153,0.6)]"
                   />
                 </div>
@@ -106,7 +108,7 @@ export function WorkflowSection() {
                   initial={{ opacity: 0, x: isEven ? -40 : 40 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
-                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  transition={motionTransition}
                   className="w-full pl-12 md:w-[calc(50%-32px)] md:pl-0"
                 >
                   <div className="glass-card group relative overflow-hidden rounded-3xl border border-white/5 bg-slate-950/30 p-6 backdrop-blur-lg transition-colors duration-300 hover:border-white/10 md:p-8">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { InteractionProvider } from "@/components/providers/interaction-provider";
+import { MotionProvider } from "@/components/providers/motion-provider";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll";
 import { EasterEggProvider } from "@/context/EasterEggContext";
 import { content } from "@/content/ru";
@@ -30,9 +31,11 @@ export default function RootLayout({
     <html lang="ru" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-[var(--background)] text-[var(--foreground)]">
         <EasterEggProvider>
-          <SmoothScrollProvider>
-            <InteractionProvider>{children}</InteractionProvider>
-          </SmoothScrollProvider>
+          <MotionProvider>
+            <SmoothScrollProvider>
+              <InteractionProvider>{children}</InteractionProvider>
+            </SmoothScrollProvider>
+          </MotionProvider>
         </EasterEggProvider>
       </body>
     </html>

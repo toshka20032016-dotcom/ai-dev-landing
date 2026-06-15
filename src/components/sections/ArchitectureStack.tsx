@@ -5,12 +5,19 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { content, type StackKey } from "@/content/ru";
 import { useEasterEgg } from "@/context/EasterEggContext";
+import { usePerformanceController } from "@/hooks/usePerformanceController";
+import { scaleMotionTransition } from "@/lib/performance";
 
 export default function ArchitectureStack() {
   const { architectureStack } = content;
   const { isEasterEggActive, animationMultiplier } = useEasterEgg();
+  const { motionTransition } = usePerformanceController();
   const [activeTab, setActiveTab] = useState<StackKey>("frontend");
   const activeStack = architectureStack.stacks[activeTab];
+  const springTransition = scaleMotionTransition(
+    motionTransition,
+    animationMultiplier,
+  );
 
   return (
     <section className="relative z-10 mx-auto max-w-6xl overflow-hidden px-4 py-24">
@@ -47,11 +54,7 @@ export default function ArchitectureStack() {
                   <motion.div
                     layoutId="activeArchitectureTab"
                     className="absolute inset-0 rounded-lg border border-white/5 bg-white/10 shadow-inner"
-                    transition={{
-                      type: "spring",
-                      stiffness: 380 / animationMultiplier,
-                      damping: 30 / animationMultiplier,
-                    }}
+                    transition={springTransition}
                   />
                 )}
                 <span className="relative z-10">{tab.label}</span>
@@ -89,10 +92,11 @@ export default function ArchitectureStack() {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: -15 }}
                 transition={{
-                  type: "spring",
-                  stiffness: 120 / animationMultiplier,
-                  damping: 20 / animationMultiplier,
-                  delay: idx * 0.05 * animationMultiplier,
+                  ...springTransition,
+                  delay:
+                    springTransition.type === "spring"
+                      ? idx * 0.05 * animationMultiplier
+                      : idx * 0.03 * animationMultiplier,
                 }}
                 className="group relative flex flex-col"
               >

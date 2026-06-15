@@ -4,14 +4,22 @@ import { useState } from "react";
 import Image from "next/image";
 
 import { content } from "@/content/ru";
+import { usePerformanceController } from "@/hooks/usePerformanceController";
 
 export function AuthorPortrait() {
   const { authorPortrait } = content.hero;
+  const { disableHeavyEffects } = usePerformanceController();
   const [imageError, setImageError] = useState(false);
 
   return (
     <div className="group/portrait w-full max-w-xl">
-      <div className="relative aspect-[4/5] w-full transform-gpu overflow-hidden rounded-2xl border border-white/10 bg-slate-950/40 shadow-[0_0_30px_rgba(6,182,212,0.04),0_4px_40px_rgba(0,0,0,0.5)] backdrop-blur-md transition-all duration-500 will-change-transform group-hover/portrait:border-cyan-500/20 group-hover/portrait:shadow-[0_0_40px_rgba(6,182,212,0.12)]">
+      <div
+        className={`relative aspect-[4/5] w-full transform-gpu overflow-hidden rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(6,182,212,0.04),0_4px_40px_rgba(0,0,0,0.5)] transition-all duration-500 will-change-transform group-hover/portrait:border-cyan-500/20 group-hover/portrait:shadow-[0_0_40px_rgba(6,182,212,0.12)] ${
+          disableHeavyEffects
+            ? "bg-[#07080e]"
+            : "bg-slate-950/40 backdrop-blur-md"
+        }`}
+      >
         {imageError ? (
           <div
             aria-hidden

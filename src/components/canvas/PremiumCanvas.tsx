@@ -1,14 +1,15 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
+import { motion } from "framer-motion";
 
 import { useEasterEgg } from "@/context/EasterEggContext";
+import { usePerformanceController } from "@/hooks/usePerformanceController";
 
 const BLOB_BASE =
   "pointer-events-none absolute select-none transform-gpu will-change-transform";
 
 export default function PremiumCanvas() {
-  const prefersReducedMotion = useReducedMotion();
+  const { disableHeavyEffects } = usePerformanceController();
   const { isEasterEggActive, animationMultiplier } = useEasterEgg();
 
   return (
@@ -17,7 +18,7 @@ export default function PremiumCanvas() {
 
       <div className="pointer-events-none absolute inset-0 select-none bg-[linear-gradient(to_right,rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-70" />
 
-      {prefersReducedMotion ? (
+      {disableHeavyEffects ? (
         <>
           <div
             className={`${BLOB_BASE} top-[-10%] left-[-10%] h-[50vw] w-[50vw] rounded-full bg-purple-600/20 blur-[140px] opacity-[0.18]`}
