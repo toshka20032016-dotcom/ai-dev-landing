@@ -1,29 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useReducedMotion, type Transition } from "framer-motion";
+import { useMemo, useSyncExternalStore } from "react";
+import { useReducedMotion } from "framer-motion";
 
 import {
   getDeviceCapabilities,
   getMotionTransition,
   isLowEndDevice,
+  type DeviceCapabilities,
 } from "@/lib/performance";
+
+const SERVER_CAPS: DeviceCapabilities = { cores: 8, ram: 8, isSlowConnection: false };
+
+function subscribeDeviceCapabilities(onStoreChange: () => void) {
+  const connection =
+    navigator.connection ?? navigator.mozConnection ?? navigator.webkitConnection;
+
+  connection?.addEventListener("change", onStoreChange);
+  return () => connection?.removeEventListener("change", onStoreChange);
+}
 
 export function usePerformanceController() {
   const prefersReducedMotion = useReducedMotion();
-  const [disableHeavyEffects, setDisableHeavyEffects] = useState(
-    prefersReducedMotion ?? false,
-  );
-  const [motionTransition, setMotionTransition] = useState<Transition>(() =>
-    getMotionTransition(prefersReducedMotion ?? false),
+  const caps = useSyncExternalStore(
+    subscribeDeviceCapabilities,
+    getDeviceCapabilities,
+    () => SERVER_CAPS,
   );
 
-  useEffect(() => {
-    const caps = getDeviceCapabilities();
+  return useMemo(() => {
     const lowEnd = isLowEndDevice(caps, prefersReducedMotion ?? false);
-    setDisableHeavyEffects(lowEnd);
-    setMotionTransition(getMotionTransition(lowEnd));
-  }, [prefersReducedMotion]);
-
-  return { disableHeavyEffects, motionTransition };
+    return {
+      disableHeavyEffects: lowEnd,
+      motionTransition: getMotionTransition(lowEnd),
+    };
+  }, [caps, prefersReducedMotion]);
 }

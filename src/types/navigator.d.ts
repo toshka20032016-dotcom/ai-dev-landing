@@ -1,4 +1,4 @@
-interface NetworkInformation {
+interface NetworkInformation extends EventTarget {
   readonly effectiveType?: "slow-2g" | "2g" | "3g" | "4g";
   readonly saveData?: boolean;
 }
