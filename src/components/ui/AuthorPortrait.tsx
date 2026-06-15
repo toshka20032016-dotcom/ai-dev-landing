@@ -9,7 +9,7 @@ import { usePerformanceController } from "@/hooks/usePerformanceController";
 export function AuthorPortrait() {
   const { authorPortrait } = content.hero;
   const { disableHeavyEffects } = usePerformanceController();
-  const [imageError, setImageError] = useState(false);
+  const [imageReady, setImageReady] = useState(false);
 
   return (
     <div className="group/portrait w-full max-w-xl">
@@ -20,23 +20,23 @@ export function AuthorPortrait() {
             : "bg-slate-950/40 backdrop-blur-md"
         }`}
       >
-        {imageError ? (
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-br from-slate-900 via-cyan-950/40 to-[#030408]"
-          />
-        ) : (
-          <Image
-            src="/images/author.jpg"
-            alt={authorPortrait.alt}
-            fill
-            priority
-            sizes="(max-width: 1024px) 100vw, 400px"
-            quality={85}
-            onError={() => setImageError(true)}
-            className="scale-[1.01] transform-gpu object-cover object-[center_20%] grayscale-[10%] transition-transform duration-700 ease-out group-hover/portrait:scale-[1.03] group-hover/portrait:grayscale-0"
-          />
-        )}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-br from-slate-900 via-cyan-950/40 to-[#030408]"
+        />
+        <Image
+          src="/images/author.jpg"
+          alt={authorPortrait.alt}
+          fill
+          priority
+          sizes="(max-width: 1024px) 100vw, 400px"
+          quality={85}
+          onLoad={() => setImageReady(true)}
+          onError={() => setImageReady(false)}
+          className={`scale-[1.01] transform-gpu object-cover object-[center_20%] grayscale-[10%] transition-all duration-700 ease-out group-hover/portrait:scale-[1.03] group-hover/portrait:grayscale-0 ${
+            imageReady ? "opacity-100" : "opacity-0"
+          }`}
+        />
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-1/2 bg-gradient-to-t from-[#030408] via-[#030408]/40 to-transparent" />
 

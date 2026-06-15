@@ -22,11 +22,19 @@ export type DeviceCapabilities = {
   isSlowConnection: boolean;
 };
 
-export function getDeviceCapabilities(): DeviceCapabilities {
-  if (typeof window === "undefined") {
-    return { cores: 8, ram: 8, isSlowConnection: false };
-  }
+const SERVER_CAPS: DeviceCapabilities = {
+  cores: 8,
+  ram: 8,
+  isSlowConnection: false,
+};
 
+let cachedClientCaps: DeviceCapabilities | null = null;
+
+export function invalidateDeviceCapabilities() {
+  cachedClientCaps = null;
+}
+
+function readDeviceCapabilities(): DeviceCapabilities {
   const cores = navigator.hardwareConcurrency || 4;
   const ram = navigator.deviceMemory ?? 8;
 
@@ -41,6 +49,18 @@ export function getDeviceCapabilities(): DeviceCapabilities {
     : false;
 
   return { cores, ram, isSlowConnection };
+}
+
+export function getDeviceCapabilities(): DeviceCapabilities {
+  if (typeof window === "undefined") {
+    return SERVER_CAPS;
+  }
+
+  if (!cachedClientCaps) {
+    cachedClientCaps = readDeviceCapabilities();
+  }
+
+  return cachedClientCaps;
 }
 
 export function isLowEndDevice(

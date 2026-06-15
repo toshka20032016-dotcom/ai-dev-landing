@@ -80,7 +80,7 @@ export function Hero() {
   return (
     <section
       ref={sectionRef}
-      onMouseMove={handleMouseMove}
+      onMouseMove={disableHeavyEffects ? undefined : handleMouseMove}
       onMouseLeave={enable3D ? handleMouseLeave : undefined}
       className="relative min-h-screen overflow-hidden pt-28"
       style={

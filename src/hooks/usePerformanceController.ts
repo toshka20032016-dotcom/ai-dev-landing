@@ -6,6 +6,7 @@ import { useReducedMotion } from "framer-motion";
 import {
   getDeviceCapabilities,
   getMotionTransition,
+  invalidateDeviceCapabilities,
   isLowEndDevice,
   type DeviceCapabilities,
 } from "@/lib/performance";
@@ -16,8 +17,13 @@ function subscribeDeviceCapabilities(onStoreChange: () => void) {
   const connection =
     navigator.connection ?? navigator.mozConnection ?? navigator.webkitConnection;
 
-  connection?.addEventListener("change", onStoreChange);
-  return () => connection?.removeEventListener("change", onStoreChange);
+  const handleChange = () => {
+    invalidateDeviceCapabilities();
+    onStoreChange();
+  };
+
+  connection?.addEventListener("change", handleChange);
+  return () => connection?.removeEventListener("change", handleChange);
 }
 
 export function usePerformanceController() {
