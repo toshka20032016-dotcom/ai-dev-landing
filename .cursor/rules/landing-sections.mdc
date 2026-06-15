@@ -1,0 +1,15 @@
+---
+description: Landing page section component conventions
+globs: src/components/sections/**/*
+alwaysApply: false
+---
+
+# Landing Sections
+
+- Export named function components: `Hero`, `Features`, etc.
+- Use `"use client"` only when hooks, motion, or event handlers are needed
+- Spacing: `py-24 md:py-32`, container `mx-auto max-w-7xl px-4 md:px-6`
+- Headings: `text-3xl md:text-5xl font-bold tracking-tight`
+- Cards: `.glass` utility from globals.css for glassmorphism
+- Import copy from `@/content/ru`
+- Framer Motion: `whileInView`, `viewport={{ once: true, margin: "-80px" }}`

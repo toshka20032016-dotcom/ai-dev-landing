@@ -1,0 +1,13 @@
+---
+description: Animation and performance rules
+globs: src/components/**/*
+alwaysApply: false
+---
+
+# Animations
+
+- Prefer `transform` and `opacity` — avoid animating width/height
+- Stagger children with `transition={{ delay: index * 0.1 }}`
+- Respect `prefers-reduced-motion: reduce` — disable motion
+- Lazy-load heavy 3D; use CSS gradient blobs as fallback
+- Lenis wraps app in `SmoothScrollProvider`

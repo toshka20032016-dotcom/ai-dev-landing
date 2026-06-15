@@ -1,0 +1,29 @@
+---
+description: OSS stack and constraints for premium landing pages
+alwaysApply: true
+---
+
+# OSS Stack
+
+- Next.js App Router + TypeScript + Tailwind CSS v4
+- UI: shadcn/ui patterns + Magic UI blocks (copy source, MIT)
+- Animations: Framer Motion + Lenis smooth scroll
+- Icons: Lucide React or Iconify MCP
+- Content: `src/content/ru.ts` — no hardcoded Russian strings in JSX
+- Deploy: Vercel (user preference)
+
+## Forbidden
+
+- Spline, Firecrawl, paid CMS, proprietary SDKs
+- Inline magic color values — use `lib/design-tokens.ts`
+
+## MCP workflow
+
+1. **context7** / **docfork** — fresh docs for Tailwind, Framer Motion, Next.js
+2. **iconify** — search and add SVG icons
+3. **playwright** / **cursor-ide-browser** — visual QA after each section
+4. **vercel** — deploy on request
+
+## Section rule
+
+One file per section in `src/components/sections/`. Compose in `src/app/page.tsx`.

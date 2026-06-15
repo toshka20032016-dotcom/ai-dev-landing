@@ -1,0 +1,50 @@
+---
+description: Performance optimization rules for Web3 landing
+globs: src/**/*.{tsx,ts,css}
+alwaysApply: false
+---
+
+# Performance
+
+## GPU compositing
+
+- Add `transform-gpu will-change-transform` (via `GPU_LAYER` from `@/lib/performance`) to:
+  - Framer Motion animated elements
+  - 3D terminal wrapper and portfolio cards
+  - Scroll parallax wrappers (`SectionParallax`, `ParallaxHeading`)
+  - Hover glow / custom cursor layers
+- Prefer animating `transform` and `opacity` only — never width/height/top/left
+
+## Mobile & 3D
+
+- Disable 3D mouse tracking (`rotateX`/`rotateY`/`perspective`) when `window.innerWidth < 1024`
+- Use `useEffect` resize listener for mobile detection in hero
+- Skip 3D card stacks on mobile; use flat list layout
+
+## Backdrop blur budget
+
+- **Never** use `backdrop-blur-2xl` or `backdrop-blur-3xl`
+- Prefer `backdrop-blur-md` or `backdrop-blur-lg` on section cards and headers
+- Keep `.glass-card` CSS blur at 12px max (`blur(12px)`)
+
+## Reduced motion
+
+- Respect `prefers-reduced-motion: reduce` via `useReducedMotion()`:
+  - Disable Lenis smooth scroll
+  - Disable 3D transforms and parallax
+  - Replace pulsing PremiumCanvas blobs with static divs
+  - Hide custom cursor (`AppSmoothContainer`)
+
+## Background layers
+
+- All PremiumCanvas blobs: `pointer-events-none select-none`
+- Decorative gradients and glows must not intercept clicks
+
+## Audio (optional)
+
+- Micro-sounds via `useSound` hook — only after first user interaction (click/keydown)
+- Wire through `InteractionProvider` + `Button` onClick
+
+## Build gate
+
+- Run `npm run build` before merging performance changes — zero errors required

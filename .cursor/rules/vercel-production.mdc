@@ -1,0 +1,39 @@
+---
+description: Production build rules for Vercel deploy from GitHub
+alwaysApply: true
+---
+
+# Vercel Production Build
+
+Project deploys to Vercel from GitHub. No localhost-only assumptions.
+
+## Pre-deploy checklist
+
+1. **Paths** — relative imports only (`@/…`). No absolute local filesystem paths.
+2. **External links** — `href="https://…"` with `target="_blank"` and `rel="noopener noreferrer"`.
+3. **Icons** — import only existing `lucide-react` components; no duplicates.
+4. **TypeScript** — no `any`. Type props, state, and server action payloads strictly.
+5. **Data** — services, workflow, portfolio arrays live in typed constants in `src/content/ru.ts`, outside component bodies, for static optimization.
+6. **Images** — use `next/image` or placeholder blocks ready for optimization.
+7. **Env** — document required vars in README; never commit secrets.
+
+## Validation before merge
+
+```bash
+npm run lint
+npm run build
+```
+
+Build must complete with **zero errors**. Fix all broken imports and ESLint issues.
+
+## Server actions
+
+- Validate with Zod in `src/lib/validations/`
+- Server actions in `src/app/actions/` with `"use server"`
+- No client-only APIs in server code
+
+## Sections
+
+- One section per file in `src/components/sections/`
+- Russian copy only in `src/content/ru.ts`
+- Visual QA at 375px and 1280px after section changes
