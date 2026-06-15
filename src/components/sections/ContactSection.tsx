@@ -31,7 +31,7 @@ const initialFormState: FormState = {
 };
 
 const inputClassName =
-  "w-full border-b border-white/10 bg-transparent py-3 pr-4 pl-7 font-light text-white outline-none transition-all duration-300 placeholder:text-white/20 hover:border-white/25 focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/20 disabled:opacity-50";
+  "w-full border-b border-white/10 bg-transparent py-3 pr-4 pl-7 font-light text-white outline-none transition-all duration-300 placeholder:text-white/20 hover:border-white/25 focus:border-cyan-500/50 focus:shadow-[0_4px_20px_rgba(6,182,212,0.08)] disabled:opacity-50";
 
 function buildMessage(message: string, tags: string[]) {
   if (tags.length === 0) return message;
