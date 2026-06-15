@@ -6,6 +6,7 @@ import { ArrowRight, Bot, LayoutDashboard, Terminal } from "lucide-react";
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { SectionParallax } from "@/components/ui/section-parallax";
 import { content, type ServiceIcon } from "@/content/ru";
+import { useEasterEgg } from "@/context/EasterEggContext";
 import { GPU_LAYER } from "@/lib/performance";
 
 const icons: Record<ServiceIcon, typeof Bot> = {
@@ -22,6 +23,7 @@ const iconColors: Record<ServiceIcon, string> = {
 
 export function ServicesSection() {
   const { services } = content;
+  const { isEasterEggActive, animationMultiplier } = useEasterEgg();
 
   return (
     <section id="features" className="relative z-10 mx-auto max-w-7xl px-4 py-24">
@@ -31,9 +33,15 @@ export function ServicesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.5 }}
-          className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-cyan-400 backdrop-blur-sm"
+          className={`mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium backdrop-blur-sm ${
+            isEasterEggActive ? "text-pink-400" : "text-cyan-400"
+          }`}
         >
-          <span className="flex h-2 w-2 animate-pulse rounded-full bg-cyan-400" />
+          <span
+            className={`flex h-2 w-2 animate-pulse rounded-full ${
+              isEasterEggActive ? "bg-pink-400" : "bg-cyan-400"
+            }`}
+          />
           {services.badge}
         </motion.div>
 
@@ -45,7 +53,13 @@ export function ServicesSection() {
           className="mb-6 text-3xl font-extrabold tracking-tight text-white md:text-5xl"
         >
           {services.title}{" "}
-          <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <span
+            className={
+              isEasterEggActive
+                ? "bg-gradient-to-r from-pink-400 via-fuchsia-400 to-purple-400 bg-clip-text text-transparent"
+                : "bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+            }
+          >
             {services.titleHighlight}
           </span>
         </motion.h2>
@@ -73,8 +87,8 @@ export function ServicesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{
-                duration: 0.6,
-                delay: index * 0.15,
+                duration: 0.6 * animationMultiplier,
+                delay: index * 0.15 * animationMultiplier,
                 ease: [0.4, 0, 0.2, 1],
               }}
               whileHover={{ y: -6 }}
@@ -83,14 +97,18 @@ export function ServicesSection() {
                   "--glow-color": service.glowColor,
                 } as React.CSSProperties
               }
-              className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/5 bg-slate-950/40 p-8 shadow-2xl backdrop-blur-lg transition-all duration-300 hover:border-white/15 hover:shadow-[0_0_40px_var(--glow-color)] ${GPU_LAYER}`}
+              className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/5 bg-slate-950/40 p-8 shadow-2xl backdrop-blur-lg transition-all duration-300 hover:border-white/15 ${
+                isEasterEggActive
+                  ? "hover:shadow-[0_0_40px_rgba(236,72,153,0.15)]"
+                  : "hover:shadow-[0_0_40px_var(--glow-color)]"
+              } ${GPU_LAYER}`}
             >
               <BorderBeam
                 className="opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                colorFrom={service.beamColorFrom}
-                colorTo={service.beamColorTo}
+                colorFrom={isEasterEggActive ? "#f472b6" : service.beamColorFrom}
+                colorTo={isEasterEggActive ? "#e879f9" : service.beamColorTo}
                 size={80}
-                duration={8}
+                duration={8 * animationMultiplier}
                 delay={index * 2}
                 borderWidth={1.5}
               />
@@ -107,7 +125,11 @@ export function ServicesSection() {
                   </span>
                 </div>
 
-                <h3 className="mb-4 text-xl font-bold text-white transition-colors duration-300 group-hover:text-cyan-400">
+                <h3
+                  className={`mb-4 text-xl font-bold text-white transition-colors duration-300 ${
+                    isEasterEggActive ? "group-hover:text-pink-400" : "group-hover:text-cyan-400"
+                  }`}
+                >
                   {service.title}
                 </h3>
                 <p className="mb-8 text-sm font-light leading-relaxed text-gray-400">

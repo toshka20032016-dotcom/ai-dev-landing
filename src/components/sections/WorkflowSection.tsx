@@ -27,12 +27,12 @@ export function WorkflowSection() {
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start center", "end center"],
+    offset: ["start 0.8", "end 0.2"],
   });
 
   const scaleY = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
+    stiffness: 120,
+    damping: 28,
     restDelta: 0.001,
   });
 
@@ -74,7 +74,7 @@ export function WorkflowSection() {
         {!prefersReducedMotion && (
           <motion.div
             style={{ scaleY }}
-            className={`absolute bottom-0 left-4 top-0 w-[2px] origin-top -translate-x-1/2 bg-gradient-to-b from-purple-500 via-pink-500 to-cyan-400 shadow-[0_0_15px_rgba(168,85,247,0.5)] md:left-1/2 ${GPU_LAYER}`}
+            className={`absolute bottom-0 left-4 top-0 z-10 w-[3px] origin-top -translate-x-1/2 rounded-full bg-gradient-to-b from-purple-400 via-pink-500 to-cyan-400 shadow-[0_0_20px_rgba(168,85,247,0.7),0_0_40px_rgba(236,72,153,0.35)] md:left-1/2 ${GPU_LAYER}`}
           />
         )}
 

@@ -37,20 +37,22 @@ export function KpiSection() {
               key={stat.label}
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
+              whileHover={{ y: -6 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className={`group rounded-2xl border border-white/5 bg-slate-950/20 p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/10 hover:bg-slate-950/40 ${GPU_LAYER}`}
+              className={`group glass-card relative overflow-hidden rounded-2xl border border-white/5 bg-slate-950/40 p-6 shadow-2xl backdrop-blur-lg transition-all duration-300 hover:border-white/15 hover:shadow-[0_0_40px_rgba(6,182,212,0.12)] ${GPU_LAYER}`}
             >
-              <div className="mb-6 w-fit rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors group-hover:border-white/10">
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent" />
+              <div className="relative mb-6 w-fit rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors group-hover:border-white/20 group-hover:bg-white/[0.05]">
                 <Icon className={`h-5 w-5 ${iconColor}`} />
               </div>
-              <div className="mb-2 font-mono text-3xl font-black tracking-tight text-white">
+              <div className="relative mb-2 font-mono text-3xl font-black tracking-tight text-white">
                 {stat.value}
               </div>
-              <div className="mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase transition-colors group-hover:text-cyan-400">
+              <div className="relative mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase transition-colors group-hover:text-cyan-400">
                 {stat.label}
               </div>
-              <p className="text-xs leading-relaxed font-light text-gray-500">
+              <p className="relative text-xs leading-relaxed font-light text-gray-500">
                 {stat.desc}
               </p>
             </motion.div>

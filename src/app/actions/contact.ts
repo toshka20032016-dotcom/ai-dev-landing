@@ -17,7 +17,17 @@ export async function submitContactForm(
     };
   }
 
-  console.log("[contact] New submission:", parsed.data);
+  const { tags = [], message, ...rest } = parsed.data;
+
+  console.log("[contact] New submission:", {
+    ...rest,
+    tags,
+    message,
+  });
+
+  if (tags.length > 0) {
+    console.log("[contact] Selected service tags:", tags.join(", "));
+  }
 
   return { success: true };
 }

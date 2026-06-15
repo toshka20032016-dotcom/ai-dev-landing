@@ -32,6 +32,25 @@ export type PortfolioItem = {
   patternText: string;
 };
 
+export type StackKey = "frontend" | "backend" | "infra";
+
+export type ArchitecturePhase = "input" | "core" | "output";
+
+export type ArchitectureNode = {
+  id: string;
+  phase: ArchitecturePhase;
+  name: string;
+  tech: string;
+  connectionText: string;
+  description: string;
+};
+
+export type ArchitectureStackLayer = {
+  title: string;
+  desc: string;
+  nodes: readonly ArchitectureNode[];
+};
+
 export const SERVICES_ITEMS: readonly ServiceItem[] = [
   {
     icon: "bot",
@@ -174,6 +193,116 @@ export const content = {
       "VERCEL EDGE",
     ],
   },
+  architectureStack: {
+    badge: "Production Стек",
+    title: "Архитектура моих решений",
+    tabs: [
+      { key: "frontend" as const, label: "frontend" },
+      { key: "backend" as const, label: "backend" },
+      { key: "infra" as const, label: "infra" },
+    ],
+    stacks: {
+      frontend: {
+        title: "Клиентский слой высокой доступности",
+        desc: "Проектирование интерфейсов с упором на Core Web Vitals, гибридный рендеринг и мгновенный отклик без лагов.",
+        nodes: [
+          {
+            id: "fe-1",
+            phase: "input",
+            name: "User Interaction",
+            tech: "Lenis & Motion",
+            connectionText: "передает события в →",
+            description:
+              "Плавный скролл и аппаратные анимации (GPU) для отзывчивости интерфейса.",
+          },
+          {
+            id: "fe-2",
+            phase: "core",
+            name: "Core Framework",
+            tech: "Next.js 15 (App Router)",
+            connectionText: "компилирует и деплоит на →",
+            description:
+              "Серверный рендеринг (SSR) и оптимизация изображений для идеального SEO.",
+          },
+          {
+            id: "fe-3",
+            phase: "output",
+            name: "Edge Infrastructure",
+            tech: "Vercel Edge Network",
+            connectionText: "раздает контент пользователю",
+            description:
+              "Глобальная сеть CDN, минимизирующая Time to First Byte (TTFB) по всему миру.",
+          },
+        ],
+      },
+      backend: {
+        title: "Асинхронная отказоустойчивая бизнес-логика",
+        desc: "Высоконагруженная серверная архитектура, спроектированная под параллельную обработку тысяч запросов без блокировки потоков.",
+        nodes: [
+          {
+            id: "be-1",
+            phase: "input",
+            name: "Async Event",
+            tech: "FastAPI / Aiogram 3",
+            connectionText: "обрабатывает событие через →",
+            description:
+              "Асинхронные роуты и вебхуки для мгновенного приема входящих данных.",
+          },
+          {
+            id: "be-2",
+            phase: "core",
+            name: "Event Loop Logic",
+            tech: "Python (Asyncio)",
+            connectionText: "оркестрирует процессы в →",
+            description:
+              "Многозадачный движок автоматизации, парсинга и ИИ-агентов.",
+          },
+          {
+            id: "be-3",
+            phase: "output",
+            name: "Isolated Runtime",
+            tech: "Docker Containers",
+            connectionText: "изолирует и масштабирует код",
+            description:
+              "Контейнеризация сервисов для безопасной и предсказуемой работы в Cloud.",
+          },
+        ],
+      },
+      infra: {
+        title: "Автоматизированная инфраструктура & DevOps",
+        desc: "Полный цикл CI/CD контроля, автоматическая маршрутизация трафика и изоляция сред.",
+        nodes: [
+          {
+            id: "inf-1",
+            phase: "input",
+            name: "Code Push",
+            tech: "GitHub Actions",
+            connectionText: "запускает конвейер сборки →",
+            description:
+              "Автоматическое тестирование типов TypeScript и проверка линтеров перед деплоем.",
+          },
+          {
+            id: "inf-2",
+            phase: "core",
+            name: "Data Persistence",
+            tech: "PostgreSQL / Prisma",
+            connectionText: "синхронизирует данные с →",
+            description:
+              "Оптимизированные индексы базы данных и безопасные миграции схемы.",
+          },
+          {
+            id: "inf-3",
+            phase: "output",
+            name: "Network Routing",
+            tech: "Proxy-Market / Cloud",
+            connectionText: "распределяет нагрузку",
+            description:
+              "Ротация резидентных прокси для стабильного парсинга и защиты от блокировок.",
+          },
+        ],
+      },
+    },
+  },
   kpi: {
     items: [
       {
@@ -204,11 +333,21 @@ export const content = {
   },
   hero: {
     badge: "Open Source · Next.js · Vercel",
-    title: "Мы — рост вашего проекта",
+    title: "Разрабатываю и запускаю цифровые продукты со скоростью мысли",
+    stackBadge: {
+      label: "Стек: Next.js 16 + Claude",
+      href: "https://github.com/toshka20032016-dotcom",
+    },
     subtitle:
       "Собираем премиум-лендинги с анимациями, glassmorphism и адаптивом. Стек полностью open source.",
     primaryCta: "Начать проект",
     secondaryCta: "Смотреть кейсы",
+    authorPortrait: {
+      alt: "Афанасьев — AI-разработчик, вайбкодер",
+      status: "AVAILABLE FOR TASKS",
+      captionName: "AFANASYEV.DEV",
+      captionRole: "AI PRODUCT ENGINEER",
+    },
     terminal: {
       title: "AI_CORE_GENERATOR.SH",
       engine: "Engine: Cursor Agent + Claude 3.5",
@@ -366,14 +505,22 @@ export const content = {
     title: "Обсудить проект",
     subtitle:
       "Опишите вашу задачу или оставьте контакты. Я изучу логику процессов и свяжусь с вами в течение пары часов.",
+    tagsLabel: "Выберите тип задачи (кликните):",
+    serviceTags: [
+      { id: "bot", label: "Telegram Бот" },
+      { id: "crm", label: "Кастомная CRM" },
+      { id: "parser", label: "Парсер / Скрипт" },
+      { id: "mvp", label: "MVP под ключ" },
+      { id: "speed", label: "⚡ Срочная сборка" },
+    ],
     fields: {
       name: {
         label: "Ваше имя",
         placeholder: "Константин",
       },
       contact: {
-        label: "Telegram или Email",
-        placeholder: "@username или email@domain.com",
+        label: "Telegram или Телефон",
+        placeholder: "@username или +7 (999) 000-00-00",
       },
       message: {
         label: "Описание задачи (Опционально)",

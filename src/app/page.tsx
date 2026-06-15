@@ -5,6 +5,7 @@ import { Header } from "@/components/sections/header";
 import { Hero } from "@/components/sections/hero";
 import { TechTicker } from "@/components/sections/TechTicker";
 import { ServicesSection } from "@/components/sections/ServicesSection";
+import ArchitectureStack from "@/components/sections/ArchitectureStack";
 import { KpiSection } from "@/components/sections/KpiSection";
 import { WorkflowSection } from "@/components/sections/WorkflowSection";
 import PortfolioSection from "@/components/sections/PortfolioSection";
@@ -33,6 +34,8 @@ export default function Home() {
           <ServicesSection />
           <SectionDivider />
           <KpiSection />
+          <SectionDivider />
+          <ArchitectureStack />
           <SectionDivider />
           <WorkflowSection />
           <SectionDivider />

@@ -6,6 +6,7 @@ import { Terminal, Play, RefreshCw } from "lucide-react";
 
 import { useInteraction } from "@/components/providers/interaction-provider";
 import { content } from "@/content/ru";
+import { useEasterEgg } from "@/context/EasterEggContext";
 import { GPU_LAYER } from "@/lib/performance";
 
 type TerminalTab = keyof typeof content.hero.terminal.commands;
@@ -19,11 +20,12 @@ const VAULT_MESSAGE = "[ACCESS GRANTED]: SECRET VAULT UNLOCKED";
 export function HeroTerminal() {
   const { terminal } = content.hero;
   const interaction = useInteraction();
+  const { isEasterEggActive } = useEasterEgg();
   const [activeTab, setActiveTab] = useState<TerminalTab>("bot");
   const lineCount = terminal.commands[activeTab].length;
   const [visibleLines, setVisibleLines] = useState<number>(lineCount);
   const [isSimulating, setIsSimulating] = useState(false);
-  const showVault = interaction?.vaultUnlocked ?? false;
+  const showVault = isEasterEggActive;
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const clearTimeouts = useCallback(() => {
@@ -58,7 +60,11 @@ export function HeroTerminal() {
     >
       <div className="flex items-center justify-between border-b border-white/5 bg-white/[0.02] px-4 py-3">
         <div className="flex items-center gap-2">
-          <Terminal className="h-3.5 w-3.5 text-cyan-400" />
+          <Terminal
+            className={`h-3.5 w-3.5 transition-colors duration-500 ${
+              isEasterEggActive ? "text-pink-400" : "text-cyan-400"
+            }`}
+          />
           <span className="text-[11px] font-bold tracking-wider text-gray-400">
             {terminal.title}
           </span>
@@ -82,7 +88,9 @@ export function HeroTerminal() {
             }}
             className={`cursor-pointer border-r border-white/5 py-2.5 uppercase transition-colors last:border-0 ${
               activeTab === tab
-                ? "bg-white/[0.03] font-bold text-cyan-400"
+                ? isEasterEggActive
+                  ? "bg-white/[0.03] font-bold text-pink-400"
+                  : "bg-white/[0.03] font-bold text-cyan-400"
                 : "hover:text-white"
             }`}
           >
@@ -98,7 +106,7 @@ export function HeroTerminal() {
               key="vault"
               initial={{ opacity: 0, x: -5 }}
               animate={{ opacity: 1, x: 0 }}
-              className={`pt-1 font-bold text-emerald-400 ${GPU_LAYER}`}
+              className={`pt-1 font-bold ${isEasterEggActive ? "text-pink-400" : "text-emerald-400"} ${GPU_LAYER}`}
             >
               {VAULT_MESSAGE}
             </motion.div>
@@ -128,7 +136,11 @@ export function HeroTerminal() {
         </AnimatePresence>
 
         {!showVault && visibleLines < lineCount && (
-          <div className="flex animate-pulse items-center gap-1 text-cyan-400">
+          <div
+            className={`flex animate-pulse items-center gap-1 ${
+              isEasterEggActive ? "text-pink-400" : "text-cyan-400"
+            }`}
+          >
             <span>{terminal.compiling}</span>
           </div>
         )}
@@ -140,7 +152,11 @@ export function HeroTerminal() {
           type="button"
           onClick={() => !isSimulating && triggerSimulation(activeTab)}
           disabled={isSimulating}
-          className="flex cursor-pointer items-center gap-1 text-cyan-400 transition-colors hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-30"
+          className={`flex cursor-pointer items-center gap-1 transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
+            isEasterEggActive
+              ? "text-pink-400 hover:text-pink-300"
+              : "text-cyan-400 hover:text-cyan-300"
+          }`}
         >
           {isSimulating ? (
             <RefreshCw className="h-3 w-3 animate-spin" />

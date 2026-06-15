@@ -12,25 +12,45 @@ import {
 
 import { submitContactForm } from "@/app/actions/contact";
 import { content } from "@/content/ru";
+import BudgetTags from "@/components/ui/BudgetTags";
+import ContactInput from "@/components/ui/ContactInput";
 import { SectionParallax } from "@/components/ui/section-parallax";
 
 type FormState = {
   name: string;
   contact: string;
   message: string;
+  tags: string[];
 };
 
-const initialFormState: FormState = { name: "", contact: "", message: "" };
+const initialFormState: FormState = {
+  name: "",
+  contact: "",
+  message: "",
+  tags: [],
+};
+
+const inputClassName =
+  "w-full border-b border-white/10 bg-transparent py-3 pr-4 pl-7 font-light text-white outline-none transition-all duration-300 placeholder:text-white/20 hover:border-white/25 focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/20 disabled:opacity-50";
+
+function buildMessage(message: string, tags: string[]) {
+  if (tags.length === 0) return message;
+
+  const prefix = `[Услуги: ${tags.join(", ")}]`;
+  return message ? `${prefix}\n\n${message}` : prefix;
+}
 
 export default function ContactSection() {
   const { contact: copy } = content;
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [formKey, setFormKey] = useState(0);
 
   const resetForm = () => {
     setIsSuccess(false);
     setFormState(initialFormState);
+    setFormKey((key) => key + 1);
   };
 
   const handleSuccess = () => {
@@ -45,8 +65,15 @@ export default function ContactSection() {
 
     setIsSubmitting(true);
 
+    const payload = {
+      name: formState.name,
+      contact: formState.contact,
+      message: buildMessage(formState.message, formState.tags),
+      tags: formState.tags,
+    };
+
     try {
-      const result = await submitContactForm(formState);
+      const result = await submitContactForm(payload);
 
       if (result.success) {
         handleSuccess();
@@ -56,10 +83,12 @@ export default function ContactSection() {
       console.warn("[contact] Validation failed:", result.errors);
       setIsSubmitting(false);
     } catch {
-      console.log("Данные заявки отправлены:", formState);
+      console.log("Данные заявки отправлены:", payload);
       handleSuccess();
     }
   };
+
+  const fieldsDisabled = isSuccess || isSubmitting;
 
   return (
     <section
@@ -99,6 +128,15 @@ export default function ContactSection() {
         className="glass-card relative overflow-hidden rounded-3xl border border-white/5 bg-slate-950/30 p-8 backdrop-blur-lg md:p-10"
       >
         <form onSubmit={handleSubmit} className="space-y-8">
+          <BudgetTags
+            key={formKey}
+            selectedTags={formState.tags}
+            disabled={fieldsDisabled}
+            onChange={(tags) =>
+              setFormState((prev) => ({ ...prev, tags }))
+            }
+          />
+
           <div className="group relative">
             <label className="mb-2 block font-mono text-xs tracking-widest text-gray-500 uppercase transition-colors group-focus-within:text-cyan-400">
               {copy.fields.name.label}
@@ -110,56 +148,61 @@ export default function ContactSection() {
               <input
                 type="text"
                 required
-                disabled={isSuccess || isSubmitting}
+                disabled={fieldsDisabled}
                 value={formState.name}
                 onChange={(e) =>
-                  setFormState({ ...formState, name: e.target.value })
+                  setFormState((prev) => ({ ...prev, name: e.target.value }))
                 }
                 placeholder={copy.fields.name.placeholder}
-                className="w-full border-b border-white/10 bg-transparent py-3 pr-4 pl-7 font-light text-white outline-none transition-all duration-300 placeholder:text-white/20 focus:border-cyan-500 focus:shadow-[0_4px_20px_rgba(6,182,212,0.05)] disabled:opacity-50"
+                className={inputClassName}
               />
             </div>
           </div>
 
           <div className="group relative">
-            <label className="mb-2 block font-mono text-xs tracking-widest text-gray-500 uppercase transition-colors group-focus-within:text-purple-400">
+            <label className="mb-2 block font-mono text-xs tracking-widest text-gray-500 uppercase transition-colors group-focus-within:text-cyan-400">
               {copy.fields.contact.label}
             </label>
             <div className="relative">
-              <span className="absolute top-3.5 left-0 text-gray-600 transition-colors group-focus-within:text-purple-400">
+              <span className="absolute top-3.5 left-0 text-gray-600 transition-colors group-focus-within:text-cyan-400">
                 <SendHorizontal className="h-4 w-4" />
               </span>
-              <input
-                type="text"
+              <ContactInput
                 required
-                disabled={isSuccess || isSubmitting}
+                disabled={fieldsDisabled}
                 value={formState.contact}
-                onChange={(e) =>
-                  setFormState({ ...formState, contact: e.target.value })
+                onChange={(val) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    contact: val,
+                  }))
                 }
                 placeholder={copy.fields.contact.placeholder}
-                className="w-full border-b border-white/10 bg-transparent py-3 pr-4 pl-7 font-light text-white outline-none transition-all duration-300 placeholder:text-white/20 focus:border-purple-500 focus:shadow-[0_4px_20px_rgba(168,85,247,0.05)] disabled:opacity-50"
+                className={inputClassName}
               />
             </div>
           </div>
 
           <div className="group relative">
-            <label className="mb-2 block font-mono text-xs tracking-widest text-gray-500 uppercase transition-colors group-focus-within:text-pink-400">
+            <label className="mb-2 block font-mono text-xs tracking-widest text-gray-500 uppercase transition-colors group-focus-within:text-cyan-400">
               {copy.fields.message.label}
             </label>
             <div className="relative">
-              <span className="absolute top-3.5 left-0 text-gray-600 transition-colors group-focus-within:text-pink-400">
+              <span className="absolute top-3.5 left-0 text-gray-600 transition-colors group-focus-within:text-cyan-400">
                 <MessageSquare className="h-4 w-4" />
               </span>
               <textarea
                 rows={3}
-                disabled={isSuccess || isSubmitting}
+                disabled={fieldsDisabled}
                 value={formState.message}
                 onChange={(e) =>
-                  setFormState({ ...formState, message: e.target.value })
+                  setFormState((prev) => ({
+                    ...prev,
+                    message: e.target.value,
+                  }))
                 }
                 placeholder={copy.fields.message.placeholder}
-                className="w-full resize-none border-b border-white/10 bg-transparent py-3 pr-4 pl-7 font-light text-white outline-none transition-all duration-300 placeholder:text-white/20 focus:border-pink-500 focus:shadow-[0_4px_20px_rgba(236,72,153,0.05)] disabled:opacity-50"
+                className={`${inputClassName} resize-none`}
               />
             </div>
           </div>
