@@ -126,7 +126,8 @@ function CarouselCard({
         x: sideX,
         scale: isActive ? 1 : isMobile ? 1 : 0.88,
         rotate: isActive ? 0 : isLeft ? -6 : isRight ? 6 : 0,
-        opacity: isActive ? 1 : isMobile ? 0 : 0.45,
+        opacity: isActive ? 0.98 : isMobile ? 0 : 0.3,
+        filter: isActive || isMobile ? "blur(0px)" : "blur(3px)",
       }}
       transition={carouselTransition}
       className={`absolute top-1/2 left-1/2 w-[92%] max-w-[760px] -translate-x-1/2 -translate-y-1/2 ${GPU_LAYER} ${
@@ -134,7 +135,11 @@ function CarouselCard({
       }`}
     >
       <article
-        className={`group glass-card rounded-3xl p-4 shadow-2xl transition-shadow duration-300 sm:p-5 ${
+        className={`group glass-card rounded-3xl p-4 transition-shadow duration-300 sm:p-5 ${
+          isActive
+            ? "border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.08)]"
+            : "shadow-2xl"
+        } ${
           isEasterEggActive && isActive
             ? "shadow-[0_0_40px_rgba(236,72,153,0.15)]"
             : ""
@@ -211,7 +216,7 @@ function PortfolioCarousel({
 
   const carouselTransition = scaleMotionTransition(
     motionTransition.type === "spring"
-      ? { ...motionTransition, stiffness: 300, damping: 25 }
+      ? { ...motionTransition, stiffness: 260, damping: 28 }
       : motionTransition,
     animationMultiplier,
   );
@@ -264,7 +269,7 @@ function PortfolioCarousel({
               className={`h-2 rounded-full transition-all ${
                 index === activeIndex
                   ? "w-6 bg-cyan-400"
-                  : "w-2 bg-white/20 hover:bg-white/40"
+                  : "w-1.5 bg-white/20 hover:bg-white/40"
               }`}
             />
           ))}
