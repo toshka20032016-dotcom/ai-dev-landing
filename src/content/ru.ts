@@ -567,12 +567,12 @@ export const content = {
   nav: {
     brand: "Astrix",
     links: [
-      { label: "Услуги", href: "#services" },
+      { label: "Инжиниринг", href: "#services" },
       { label: "Процесс", href: "#workflow" },
-      { label: "Портфолио", href: "#portfolio" },
-      { label: "Контакты", href: "#contact" },
+      { label: "База знаний", href: "/wiki/telegram-bots" },
+      { label: "Связаться", href: "#contact" },
     ],
-    cta: "Оставить заявку",
+    cta: "Обсудить проект",
   },
   header: {
     logo: "AFANASYEV.DEV",
@@ -737,17 +737,17 @@ export const content = {
     ],
   },
   hero: {
-    badge: "AI-native · Next.js · Vercel",
-    title:
-      "Разрабатываю и запускаю цифровые продукты в 3 раза быстрее классических студий",
+    badge: "AI-Native Инжиниринг • В 3 раза быстрее",
+    title: "Проектирование и разработка отказоустойчивых цифровых систем",
+    titleHighlight: "цифровых систем",
     stackBadge: {
       label: "Стек: Next.js 16 + Claude",
       href: "https://github.com/toshka20032016-dotcom",
     },
     subtitle:
-      "Инжиниринг цифровых продуктов полного цикла: от архитектурного контракта до production-сервиса на Next.js и Tailwind. Асинхронный формат взаимодействия — без раздутых штатов, с прозрачной доставкой кода.",
-    primaryCta: "Начать проект",
-    secondaryCta: "Смотреть кейсы",
+      "Привет, я Антон. Я не просто пишу код — я создаю архитектуру, которая автоматизирует ваш бизнес, выдерживает пиковые нагрузки и окупается со старта. Без бюрократии и долгих месяцев ожидания.",
+    primaryCta: "Обсудить проект",
+    secondaryCta: "Архитектурные решения",
     authorPortrait: {
       alt: "Афанасьев — AI-разработчик, вайбкодер",
       status: "AVAILABLE FOR TASKS",

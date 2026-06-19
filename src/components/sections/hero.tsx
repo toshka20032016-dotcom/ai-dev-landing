@@ -11,7 +11,8 @@ import { ArrowRight } from "lucide-react";
 
 import { content } from "@/content/ru";
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { AuthorPortrait } from "@/components/ui/AuthorPortrait";
 import { HeroTerminal } from "@/components/ui/HeroTerminal";
 import { useEasterEgg } from "@/context/EasterEggContext";
@@ -124,7 +125,10 @@ export function Hero() {
               transition={{ duration: 0.6 * animationMultiplier, delay: 0.1 * animationMultiplier }}
               className={`max-w-4xl text-4xl font-bold leading-[1.1] tracking-tight md:text-6xl lg:text-7xl ${GPU_LAYER}`}
             >
-              {content.hero.title.split(" ").slice(0, -2).join(" ")}{" "}
+              {content.hero.title.slice(
+                0,
+                content.hero.title.length - content.hero.titleHighlight.length,
+              ).trimEnd()}{" "}
               <span
                 className={
                   isEasterEggActive
@@ -132,7 +136,7 @@ export function Hero() {
                     : "bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-300 bg-clip-text text-transparent"
                 }
               >
-                {content.hero.title.split(" ").slice(-2).join(" ")}
+                {content.hero.titleHighlight}
               </span>
             </motion.h1>
             <motion.p
@@ -149,13 +153,19 @@ export function Hero() {
               transition={{ duration: 0.6 * animationMultiplier, delay: 0.3 * animationMultiplier }}
               className={`mt-10 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center ${GPU_LAYER}`}
             >
-              <Button size="lg">
+              <a
+                href="#contact"
+                className={cn(buttonVariants({ size: "lg" }))}
+              >
                 {content.hero.primaryCta}
                 <ArrowRight className="h-4 w-4" />
-              </Button>
-              <Button size="lg" variant="outline">
+              </a>
+              <a
+                href="#services"
+                className={cn(buttonVariants({ size: "lg", variant: "outline" }))}
+              >
                 {content.hero.secondaryCta}
-              </Button>
+              </a>
               <a
                 href={content.hero.stackBadge.href}
                 target="_blank"
