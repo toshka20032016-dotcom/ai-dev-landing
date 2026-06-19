@@ -201,7 +201,7 @@ export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
     ],
     apiSpecs: {
       request: `{
-  "webhook_url": "https://api.client.afanasyev.dev/tg/webhook",
+  "webhook_url": "https://api.client.blackcraftlab.dev/tg/webhook",
   "secret_token": "whs_***",
   "allowed_updates": ["message", "callback_query"],
   "update": {
@@ -454,23 +454,23 @@ export type WikiSeo = {
 
 export const WIKI_SEO: Record<WikiSlug, WikiSeo> = {
   "telegram-bots": {
-    title: "Умные Telegram-боты | AFANASYEV.DEV",
+    title: "Умные Telegram-боты | BLACKCRAFTLAB",
     description: WIKI_PAGES["telegram-bots"].description,
   },
   parsers: {
-    title: "Высокоскоростные парсеры | AFANASYEV.DEV",
+    title: "Высокоскоростные парсеры | BLACKCRAFTLAB",
     description: WIKI_PAGES.parsers.description,
   },
   crm: {
-    title: "Кастомные CRM-системы | AFANASYEV.DEV",
+    title: "Кастомные CRM-системы | BLACKCRAFTLAB",
     description: WIKI_PAGES.crm.description,
   },
 };
 
 export const WIKI_SEO_FALLBACK: WikiSeo = {
-  title: "База знаний | AFANASYEV.DEV",
+  title: "База знаний | BLACKCRAFTLAB",
   description:
-    "Техническая база знаний AFANASYEV.DEV: архитектура, API-спецификации и отказоустойчивость решений для автоматизации бизнеса.",
+    "Техническая база знаний BLACKCRAFTLAB: архитектура, API-спецификации и отказоустойчивость решений для автоматизации бизнеса.",
 };
 
 export function getWikiSeo(slug: string): WikiSeo {
@@ -625,15 +625,16 @@ export const PORTFOLIO_ITEMS: readonly PortfolioItem[] = [
 
 export const content = {
   meta: {
-    title: "OSS Landing Template",
-    description: "Премиум лендинг на Next.js, Tailwind, shadcn/ui и Magic UI",
+    title: "blackcraftlab",
+    description:
+      "blackcraftlab — премиум лендинг на Next.js, Tailwind, shadcn/ui и Magic UI",
   },
   systemStatus: {
     operational: "SYSTEM STATUS: OPERATIONAL",
     edge: "VERCEL EDGE SITES: ACTIVE",
   },
   nav: {
-    brand: "Astrix",
+    brand: "blackcraftlab",
     links: [
       { label: "Инжиниринг", href: "#services" },
       { label: "Процесс", href: "#workflow" },
@@ -644,7 +645,7 @@ export const content = {
     cta: "Обсудить проект",
   },
   header: {
-    logo: "AFANASYEV.DEV",
+    logo: "BLACKCRAFTLAB",
     status: "STATUS: ACTIVE FOR PROJECTS",
     edge: "VERCEL EDGE: RUNNING",
   },
@@ -820,7 +821,7 @@ export const content = {
     authorPortrait: {
       alt: "Афанасьев — AI-разработчик, вайбкодер",
       status: "AVAILABLE FOR TASKS",
-      captionName: "AFANASYEV.DEV",
+      captionName: "BLACKCRAFTLAB",
       captionRole: "AI PRODUCT ENGINEER",
     },
     terminal: {
@@ -835,21 +836,21 @@ export const content = {
       },
       commands: {
         bot: [
-          "⚡ afanasyev.dev --create-bot --target=telegram",
+          "⚡ blackcraftlab.dev --create-bot --target=telegram",
           "⚙️ Инициализация aiogram & fastapi архитектуры...",
           "🧠 Подключение LLM контекста и промпт-матрицы...",
           "📦 Компиляция Docker-контейнера...",
           "🚀 ДЕПЛОЙ: @tg_business_bot активен [Edge Node: Vercel]",
         ],
         parser: [
-          "⚡ afanasyev.dev --init-parser --async=true",
+          "⚡ blackcraftlab.dev --init-parser --async=true",
           "🌐 Запуск headless-браузера через Playwright...",
           "🔄 Настройка ротации резидентных прокси...",
           "📊 Поток данных сопряжен с PostgreSQL...",
           "🚀 СТАТУС: Парсинг 50k товаров/мин запущен успешно!",
         ],
         crm: [
-          "⚡ afanasyev.dev --generate-crm --stack=nextjs-v4",
+          "⚡ blackcraftlab.dev --generate-crm --stack=nextjs-v4",
           "🎨 Сборка интерфейса на паттернах Magic UI & Tailwind...",
           "🔒 Настройка авторизации JWT & ролей сотрудников...",
           "📈 Интеграция графиков и лидогенерации...",
@@ -1023,7 +1024,7 @@ export const content = {
     success: "Отправлено!",
   },
   footer: {
-    copyright: "© 2026 Astrix · AI-разработка",
+    copyright: "© 2026 blackcraftlab · AI-разработка",
     tagline: "Telegram-боты, парсеры, CRM и премиум-лендинги",
     links: [
       { label: "Услуги", href: "#services" },
@@ -1036,7 +1037,7 @@ export const content = {
   },
   pricingPage: {
     meta: {
-      title: "Калькулятор стоимости — AFANASYEV.DEV",
+      title: "Калькулятор стоимости — BLACKCRAFTLAB",
       description:
         "Интерактивный калькулятор: лендинг от 15 000 ₽, парсер от 20 000 ₽, CRM от 45 000 ₽. Прозрачная смета и сроки за 30 секунд.",
     },
@@ -1165,7 +1166,7 @@ export const content = {
     },
   },
   wiki: {
-    headerBrand: "AFANASYEV.DEV // WIKI",
+    headerBrand: "BLACKCRAFTLAB // WIKI",
     backToHome: "← На главную",
     otherSections: "Другие разделы",
     architectureTitle: "Архитектура и этапы реализации",
@@ -1315,7 +1316,7 @@ export const content = {
         { kind: "command", text: "npm run lint && npm run build" },
         { kind: "success", text: "TypeScript compile: 0 errors" },
         { kind: "success", text: "ESLint: passed" },
-        { kind: "info", text: "Docker image: afanasyev/app:sha-a4f2c1" },
+        { kind: "info", text: "Docker image: blackcraftlab/app:sha-a4f2c1" },
         { kind: "command", text: "vercel deploy --prod" },
         { kind: "success", text: "Production deployment: READY" },
       ],

@@ -1,4 +1,4 @@
-# Landing OSS Template
+# blackcraftlab
 
 Премиум open-source шаблон лендинга для разработки в Cursor Agent.
 
