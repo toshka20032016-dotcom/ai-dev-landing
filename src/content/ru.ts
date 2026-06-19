@@ -13,10 +13,65 @@ export type WikiFaqItem = {
   a: string;
 };
 
+export type WikiEdgeCase = {
+  title: string;
+  trigger: string;
+  resolution: string;
+};
+
+export type WikiApiSpecTabKey = "request" | "response200" | "error400";
+
+export type WikiApiSpecs = Record<WikiApiSpecTabKey, string>;
+
+export type WikiRoadmapStepStatus = "done" | "current" | "pending";
+
+export type WikiRoadmapStep = {
+  num: string;
+  name: string;
+  status: WikiRoadmapStepStatus;
+  desc: string;
+  badge: string;
+};
+
+export type WikiConfiguratorProjectType = "tg" | "parser" | "crm";
+
+export type WikiConfiguratorLoadLevel = "low" | "mid" | "high";
+
+export type WikiConfiguratorOption = {
+  value: string;
+  label: string;
+  sub: string;
+};
+
+export type WikiConfiguratorQuestion = {
+  id: string;
+  title: string;
+  options: readonly WikiConfiguratorOption[];
+};
+
+export type WikiComplianceIcon = "iac" | "security" | "production";
+
+export type WikiComplianceCard = {
+  icon: WikiComplianceIcon;
+  title: string;
+  description: string;
+};
+
+export type WikiPipelineLogKind = "success" | "command" | "info";
+
+export type WikiPipelineLogLine = {
+  kind: WikiPipelineLogKind;
+  text: string;
+};
+
 export type WikiPage = {
   title: string;
   category: string;
   description: string;
+  dataFlowGraph: string;
+  edgeCases: readonly [WikiEdgeCase, WikiEdgeCase];
+  apiSpecs: WikiApiSpecs;
+  observability: string;
   architecture: readonly WikiArchitectureStep[];
   stack: readonly string[];
   faq: readonly WikiFaqItem[];
@@ -34,7 +89,7 @@ export type ServiceItem = {
   wikiSlug: WikiSlug;
 };
 
-export type WorkflowIcon = "searchCode" | "cpu" | "shieldCheck";
+export type WorkflowIcon = "searchCode" | "cpu" | "plug" | "shieldCheck";
 
 export type WorkflowStep = {
   num: string;
@@ -79,7 +134,48 @@ export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
     title: "Умные Telegram-боты",
     category: "Автоматизация в Telegram",
     description:
-      "Проектирование и разработка отказоустойчивых ботов с бизнес-логикой любой сложности. Полная автоматизация воронок продаж, интеграция ИИ (LLM) контекста и мгновенная обработка входящих запросов через асинхронную архитектуру.",
+      "Инжиниринг цифровых продуктов в Telegram: отказоустойчивые боты с инкапсуляцией бизнес-логики, автоматизация воронок, LLM-контекст и асинхронная обработка запросов по архитектурному контракту.",
+    dataFlowGraph:
+      "User → Telegram API → FastAPI Gateway → Redis Queue → Workers → PostgreSQL",
+    edgeCases: [
+      {
+        title: "Dead Letter Queue (DLQ)",
+        trigger: "Воркер не обработал сообщение после N попыток retry.",
+        resolution:
+          "Задача попадает в DLQ с полным контекстом ошибки. Оператор получает алерт в Telegram log-gateway и может переотправить задачу вручную без потери данных.",
+      },
+      {
+        title: "Rate limiting и retry",
+        trigger: "Telegram API возвращает 429 Too Many Requests.",
+        resolution:
+          "Token bucket с экспоненциальным backoff замедляет отправку. Порядок сообщений в рамках одного чата сохраняется, рассылка не блокирует webhook-поток.",
+      },
+    ],
+    apiSpecs: {
+      request: `{
+  "update_id": 9485721,
+  "message": {
+    "message_id": 1024,
+    "from": { "id": 418293847, "username": "client_user" },
+    "chat": { "id": 418293847, "type": "private" },
+    "text": "/start",
+    "date": 1718812800
+  }
+}`,
+      response200: `{
+  "status": "queued",
+  "job_id": "tg-msg-7f3a2c",
+  "worker": "celery@worker-02",
+  "estimated_ms": 120
+}`,
+      error400: `{
+  "error": "invalid_payload",
+  "detail": "message.text exceeds 4096 chars",
+  "request_id": "req-9d4e1b"
+}`,
+    },
+    observability:
+      "Структурированные логи в Grafana Loki с метками bot_id, chat_id и update_id. Критические ошибки дублируются в Telegram log-gateway для мгновенного реагирования. Uptime-мониторинг webhook-эндпоинта через healthcheck каждые 30 секунд с алертом при latency > 500 ms.",
     stack: ["Aiogram 3.x", "FastAPI", "PostgreSQL", "Redis (Очереди)", "Docker"],
     architecture: [
       {
@@ -113,7 +209,44 @@ export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
     title: "Высокоскоростные парсеры",
     category: "Парсинг & Big Data",
     description:
-      "Разработка многопоточных скриптов для парсинга закрытых API, интернет-магазинов, маркетплейсов и криптобирж. Обход любых систем защиты от ботов (Cloudflare, капчи) и структурирование данных в промышленных масштабах.",
+      "Промышленный data-pipeline: многопоточный сбор из API, маркетплейсов и закрытых источников. Инкапсуляция парсинг-логики, обход anti-bot систем и структурирование данных в enterprise-масштабах.",
+    dataFlowGraph:
+      "Target Site → Playwright → Proxy Pool → Parser Workers → PostgreSQL/CSV",
+    edgeCases: [
+      {
+        title: "Ротация прокси при 403/423",
+        trigger: "Целевой сайт отвечает 403 Forbidden или 423 Locked.",
+        resolution:
+          "Воркер помечает прокси как burned, берёт следующий из пула и повторяет запрос с новым fingerprint. Статистика по IP ведётся в Redis для балансировки.",
+      },
+      {
+        title: "Exponential backoff",
+        trigger: "Временные сбои: 502, timeout, rate limit от донора.",
+        resolution:
+          "Интервал между повторами удваивается (1s → 2s → 4s → 8s) с jitter ±20%. После 5 неудач задача уходит в DLQ без блокировки всего конвейера.",
+      },
+    ],
+    apiSpecs: {
+      request: `{
+  "target_url": "https://market.example.com/catalog?page=1",
+  "proxy_pool": "residential-eu",
+  "output_format": "postgresql",
+  "max_concurrency": 32
+}`,
+      response200: `{
+  "status": "completed",
+  "records_parsed": 1847,
+  "duration_sec": 42.3,
+  "output": { "table": "catalog_items", "rows_written": 1847 }
+}`,
+      error400: `{
+  "error": "invalid_target",
+  "detail": "URL scheme must be https",
+  "request_id": "parse-3c8f2a"
+}`,
+    },
+    observability:
+      "Метрики throughput и error rate в Grafana: requests/sec, proxy burn rate, avg parse time. Логи Playwright-сессий с trace_id для воспроизведения падений. Telegram-алерты при падении success rate ниже 95% за 5-минутное окно.",
     stack: ["Python", "Playwright", "Asyncio", "BeautifulSoup4", "Scrapy"],
     architecture: [
       {
@@ -147,7 +280,43 @@ export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
     title: "Кастомные CRM-системы",
     category: "Бизнес-инфраструктура",
     description:
-      "Разработка индивидуальных систем учета и управления предприятием без абонентской платы. Проектирование интерфейсов под конкретные боли бизнеса: учет материалов, графики мастеров, воронки сделок и сквозная аналитика.",
+      "Кастомные ERP/CRM без абонентской платы: интерфейсы под бизнес-процессы заказчика, учёт, воронки сделок и сквозная аналитика. Асинхронная доставка кода по согласованному архитектурному контракту.",
+    dataFlowGraph: "Browser → Next.js → API Routes → Prisma → PostgreSQL",
+    edgeCases: [
+      {
+        title: "Redis cache fallback",
+        trigger: "PostgreSQL недоступна, read-only запросы продолжают поступать.",
+        resolution:
+          "Данные обслуживаются из Redis-кэша с TTL 5 минут. UI показывает баннер «данные могут быть устаревшими», write-операции ставятся в очередь до восстановления БД.",
+      },
+      {
+        title: "JWT/session при сбое БД",
+        trigger: "PostgreSQL падает во время refresh сессии.",
+        resolution:
+          "Access token (15 min) в httpOnly cookie, refresh в Redis. При падении БД refresh отклоняется безопасно — пользователь перенаправляется на login, токены не компрометируются.",
+      },
+    ],
+    apiSpecs: {
+      request: `{
+  "action": "get_profile",
+  "user_id": "usr_8k2m9p",
+  "fields": ["name", "role", "deals_count", "last_activity"]
+}`,
+      response200: `{
+  "id": "usr_8k2m9p",
+  "name": "Анна Петрова",
+  "role": "manager",
+  "deals_count": 47,
+  "last_activity": "2026-06-19T10:32:00Z"
+}`,
+      error400: `{
+  "error": "validation_error",
+  "detail": "user_id format invalid",
+  "fields": { "user_id": "must match pattern usr_[a-z0-9]+" }
+}`,
+    },
+    observability:
+      "Grafana Loki собирает server-side логи Next.js API с user_id и route. Prometheus метрики: p95 latency, Prisma query duration, cache hit ratio. Uptime Kuma проверяет /api/health каждую минуту; критические инциденты — в Telegram ops-канал.",
     stack: ["Next.js 15", "Tailwind v4", "TypeScript", "PostgreSQL", "Prisma"],
     architecture: [
       {
@@ -180,6 +349,40 @@ export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
 };
 
 export const WIKI_SLUGS = Object.keys(WIKI_PAGES) as WikiSlug[];
+
+export function isWikiSlug(value: string): value is WikiSlug {
+  return value in WIKI_PAGES;
+}
+
+export type WikiSeo = {
+  title: string;
+  description: string;
+};
+
+export const WIKI_SEO: Record<WikiSlug, WikiSeo> = {
+  "telegram-bots": {
+    title: "Умные Telegram-боты | AFANASYEV.DEV",
+    description: WIKI_PAGES["telegram-bots"].description,
+  },
+  parsers: {
+    title: "Высокоскоростные парсеры | AFANASYEV.DEV",
+    description: WIKI_PAGES.parsers.description,
+  },
+  crm: {
+    title: "Кастомные CRM-системы | AFANASYEV.DEV",
+    description: WIKI_PAGES.crm.description,
+  },
+};
+
+export const WIKI_SEO_FALLBACK: WikiSeo = {
+  title: "База знаний | AFANASYEV.DEV",
+  description:
+    "Техническая база знаний AFANASYEV.DEV: архитектура, API-спецификации и отказоустойчивость решений для автоматизации бизнеса.",
+};
+
+export function getWikiSeo(slug: string): WikiSeo {
+  return isWikiSlug(slug) ? WIKI_SEO[slug] : WIKI_SEO_FALLBACK;
+}
 
 export const SERVICES_ITEMS: readonly ServiceItem[] = [
   {
@@ -223,30 +426,39 @@ export const SERVICES_ITEMS: readonly ServiceItem[] = [
 export const WORKFLOW_STEPS: readonly WorkflowStep[] = [
   {
     num: "01",
-    phase: "Аналитика",
-    title: "Декомпозиция боли и логики бизнеса",
+    phase: "День 1",
+    title: "Проектирование и Архитектурный контракт",
     description:
-      "Разбираем ваши текущие бизнес-процессы. Вместо написания ТЗ на 50 страниц, мы создаем верхнеуровневую логику интерфейса и потоков данных. Выявляем узкие места, которые нужно автоматизировать в первую очередь.",
+      "Анализ бизнес-процессов, декомпозиция задач и фиксация финальной стоимости. Формируем структуру базы данных.",
     icon: "searchCode",
-    badge: "1–2 дня",
+    badge: "1 день",
   },
   {
     num: "02",
-    phase: "Разработка ядра",
-    title: "Скоростная сборка MVP и генерация кода",
+    phase: "День 2–3",
+    title: "Сборка и деплой MVP-ядра",
     description:
-      "Используя связку Cursor + Claude Code на базе продвинутых промптов и open-source компонентов, я разворачиваю полноценную рабочую экосистему (боты, CRM, парсеры) в 3-4 раза быстрее ручного кодинга. Весь фокус — на UX/UI и бизнес-смыслах.",
+      "Развертывание кодовой базы. На 3-й день вы получаете первый стабильный production-билд продукта, который можно тестировать в реальных условиях.",
     icon: "cpu",
-    badge: "3–5 дней",
+    badge: "2–3 дня",
   },
   {
     num: "03",
-    phase: "Тесты и деплой",
-    title: "Visual QA, автотесты и запуск в Docker",
+    phase: "День 4–5",
+    title: "Интеграционные шлюзы",
     description:
-      "Прогоняем интерфейсы через Playwright/Puppeteer тесты для проверки адаптивности на смартфонах и мониторах. Исправляем микробаги, упаковываем проект в изолированный Docker-контейнер и деплоим на Vercel или VPS. Вы получаете готовый инструмент.",
+      "Насыщение MVP логикой: подключение ИИ, сквозных API, платежных систем, кастомных дашбордов или очередей сообщений.",
+    icon: "plug",
+    badge: "4–5 дней",
+  },
+  {
+    num: "04",
+    phase: "День 6–7",
+    title: "Стресс-тесты и Безопасность",
+    description:
+      "Нагрузочное тестирование (имитация пиковых запросов), изоляция баз данных, настройка автоматических бэкапов в S3-облако и передача проекта.",
     icon: "shieldCheck",
-    badge: "2 дня",
+    badge: "6–7 дней",
   },
 ] as const;
 
@@ -263,10 +475,10 @@ export const PRICING_CARDS: readonly PricingCard[] = [
     title: "MVP за неделю",
     subtitle: "Быстрый старт",
     description:
-      "Фиксированная цена и чёткий scope: один ключевой сценарий, готовый к демо и первым пользователям.",
+      "Рабочее ядро на 3-й день, полный enterprise-цикл за 7 дней. Фиксированная цена и чёткий scope: один ключевой сценарий, готовый к демо и первым пользователям.",
     highlights: [
-      "Фиксированная стоимость без сюрпризов",
-      "Landing, бот или CRM-модуль под ключ",
+      "Production-билд на 3-й день — можно кликать и тестировать",
+      "Дни 4–7: интеграции, QA, безопасность и мониторинг",
       "Деплой на Vercel и передача репозитория",
     ],
     accent: "cyan",
@@ -475,9 +687,9 @@ export const content = {
     items: [
       {
         icon: "timer" as const,
-        value: "3-5 дней",
-        label: "Скорость сборки MVP",
-        desc: "От идеи до готового и протестированного интерфейса в продакшене.",
+        value: "3-й день",
+        label: "MVP в production",
+        desc: "Рабочее ядро задеплоено на 3-й день. Полный enterprise-цикл — 7 дней.",
       },
       {
         icon: "zap" as const,
@@ -508,7 +720,7 @@ export const content = {
       href: "https://github.com/toshka20032016-dotcom",
     },
     subtitle:
-      "AI-native разработка полного цикла: от идеи до готового production-сервиса на Next.js и Tailwind за считанные дни. Без раздутых штатов и бесконечных созвонов.",
+      "Инжиниринг цифровых продуктов полного цикла: от архитектурного контракта до production-сервиса на Next.js и Tailwind. Асинхронный формат взаимодействия — без раздутых штатов, с прозрачной доставкой кода.",
     primaryCta: "Начать проект",
     secondaryCta: "Смотреть кейсы",
     authorPortrait: {
@@ -592,7 +804,7 @@ export const content = {
     title: "Как строится",
     titleHighlight: "наша работа",
     subtitle:
-      "Проверенный продуктовый подход: от понимания задачи до готового безбагового MVP в продакшене без лишней бюрократии.",
+      "Проверенный продуктовый подход: рабочее MVP-ядро на 3-й день, полный production-цикл за 7 дней без лишней бюрократии.",
     steps: WORKFLOW_STEPS,
   },
   portfolio: {
@@ -732,13 +944,203 @@ export const content = {
     backToHome: "← На главную",
     otherSections: "Другие разделы",
     architectureTitle: "Архитектура и этапы реализации",
-    architectureSubtitle: "Как разворачивается и работает решение под капотом",
+    architectureSubtitle:
+      "Инкапсуляция логики, асинхронная доставка кода и воспроизводимый деплой по архитектурному контракту",
+    dataFlowTitle: "Поток данных (System Architecture)",
+    protocolsTitle: "Протоколы надежности и интеграции",
+    protocolsSubtitle: "Спецификации API и сценарии отказоустойчивости production-системы",
+    edgeCasesTitle: "Граничные случаи (Resilience)",
+    apiSpecsTitle: "Спецификация API",
+    observabilityTitle: "Наблюдаемость (Metrics & Monitoring)",
+    terminal: {
+      filename: "architecture_graph.sh",
+      copy: "Copy",
+      copied: "Copied!",
+      command: "cat schema.map",
+      noGraph: "Схема недоступна",
+    },
+    edgeCaseBadge: "Edge Case",
+    edgeCaseTriggerLabel: "Trigger:",
+    apiSpecTabs: {
+      request: "Payload Request",
+      response200: "Response JSON (200 OK)",
+      error400: "Error 400",
+    },
     faqTitle: "Часто задаваемые вопросы (FAQ)",
-    faqSubtitle: "Технические нюансы и ответы для заказчиков",
+    faqSubtitle: "Технические нюансы для enterprise-заказчиков и инхаус-команд",
+    roadmap: {
+      badge: "График доставки",
+      title: "Итеративный график инжиниринга",
+      nextRelease: "Первый рабочий билд: на 3-й день",
+      steps: [
+        {
+          num: "День 1",
+          name: "Архитектура & Контракт",
+          status: "done",
+          desc: "Фиксация ТЗ, проектирование схем баз данных, развертывание изолированных репозиториев.",
+          badge: "100% готовность",
+        },
+        {
+          num: "День 2–3",
+          name: "Запуск MVP Ядра",
+          status: "current",
+          desc: "Сборка основного функционала продукта. На 3-й день вы получаете рабочую, задеплоенную систему, которую можно кликать.",
+          badge: "Критический релиз",
+        },
+        {
+          num: "День 4–5",
+          name: "Интеграции & ИИ",
+          status: "pending",
+          desc: "Подключение внешних API, CRM-систем, очередей задач (Redis) и LLM-контекста.",
+          badge: "Оптимизация",
+        },
+        {
+          num: "День 6–7",
+          name: "QA & Инженерия безопасности",
+          status: "pending",
+          desc: "Стресс-тестирование, аудит уязвимостей, настройка бэкапов и систем мониторинга.",
+          badge: "Enterprise-полировка",
+        },
+      ],
+    },
+    configurator: {
+      headerLabel: "Конфигуратор архитектуры",
+      stepPrefix: "Шаг",
+      stepOf: "из",
+      totalSteps: 3,
+      questions: [
+        {
+          id: "type",
+          title: "Что запускаем?",
+          options: [
+            { value: "tg", label: "Telegram-бот", sub: "Автоматизация, ИИ, продажи" },
+            { value: "parser", label: "Парсер / Скрипт", sub: "Сбор данных, мониторинг" },
+            { value: "crm", label: "Кастомная CRM", sub: "Учет, аналитика, ERP" },
+          ],
+        },
+        {
+          id: "load",
+          title: "Планируемая нагрузка?",
+          options: [
+            { value: "low", label: "Старт (до 1 000 запр/день)", sub: "Минимальный бюджет" },
+            { value: "mid", label: "Бизнес (до 50 000 запр/день)", sub: "Нужна отказоустойчивость" },
+            { value: "high", label: "Enterprise (100k+ запр/день)", sub: "Максимальная скорость" },
+          ],
+        },
+      ],
+      finalTitle: "Конфигурация успешно подобрана!",
+      finalDescription:
+        "Оптимальный стек ({stack}) зафиксирован в архитектурном контракте. Запросите смету для согласования scope и итеративной доставки.",
+      ctaButton: "Получить смету проекта",
+      stacks: {
+        tg: {
+          low: "Aiogram + SQLite + VPS",
+          mid: "FastAPI + Aiogram + Redis",
+          high: "FastAPI + Aiogram + Redis + Celery + K8s",
+        },
+        parser: {
+          low: "Python + Requests + Cron",
+          mid: "Asyncio + Playwright + PostgreSQL",
+          high: "Asyncio + Playwright + Redis Queue + Proxy Pool",
+        },
+        crm: {
+          low: "Next.js + Supabase",
+          mid: "Next.js + PostgreSQL + Prisma",
+          high: "Next.js + PostgreSQL + Redis + Microservices",
+        },
+      },
+    },
+    roi: {
+      badge: "ROI Simulator v1.0",
+      title: "Расчет эффективности автоматизации",
+      hoursLabel: "Часов на рутину в неделю:",
+      rateLabel: "Стоимость часа специалиста:",
+      hoursUnit: "ч.",
+      resultResourceLabel: "Высвобождаемый ресурс:",
+      hoursPerWeekUnit: "часов / нед.",
+      monthlyBudgetLabel: "Экономия бюджета в месяц:",
+      currency: "₽",
+      savingsFactors: {
+        "telegram-bots": {
+          label: "Автоматизация рутины (L1 поддержка, рассылки)",
+          ratio: 0.7,
+        },
+        parsers: {
+          label: "Скорость сбора данных и мониторинга цен",
+          ratio: 0.9,
+        },
+        crm: {
+          label: "Оптимизация менеджмента и координация постов",
+          ratio: 0.6,
+        },
+      },
+      defaultFactor: {
+        label: "Автоматизация процессов",
+        ratio: 0.5,
+      },
+    },
+    pipeline: {
+      title: "CI/CD Pipeline",
+      filename: "deploy-pipeline.log",
+      lines: [
+        { kind: "command", text: "git push origin main" },
+        { kind: "info", text: "Trigger: GitHub Actions [build-and-deploy]" },
+        { kind: "command", text: "npm run lint && npm run build" },
+        { kind: "success", text: "TypeScript compile: 0 errors" },
+        { kind: "success", text: "ESLint: passed" },
+        { kind: "info", text: "Docker image: afanasyev/app:sha-a4f2c1" },
+        { kind: "command", text: "vercel deploy --prod" },
+        { kind: "success", text: "Production deployment: READY" },
+      ],
+    },
+    compliance: {
+      title: "Enterprise-ready delivery",
+      subtitle: "Стандарты, которые ожидает корпоративный заказчик",
+      cards: [
+        {
+          icon: "iac",
+          title: "Infrastructure as Code",
+          description:
+            "Terraform/Pulumi манифесты, версионирование инфраструктуры и воспроизводимые среды dev/staging/prod по архитектурному контракту.",
+        },
+        {
+          icon: "security",
+          title: "Security & NDA",
+          description:
+            "Изолированные окружения, шифрование секретов, NDA и разграничение доступа. Инкапсуляция логики без утечек в multi-tenant.",
+        },
+        {
+          icon: "production",
+          title: "Production-ready codebase",
+          description:
+            "TypeScript strict, CI/CD, автотесты и документированная структура — кодовая база готова к передаче инхаус-команде.",
+        },
+      ],
+    },
+    securityGuards: {
+      title: "Стандарты качества разработки",
+      points: [
+        {
+          title: "Защита от утечек (Data Isolation)",
+          text: "Никаких общих баз данных (Multi-tenant). Каждый проект разворачивается в изолированном Docker-контейнере на вашем сервере с шифрованием секретов через .env.",
+        },
+        {
+          title: "Автоматические Бэкапы (Zero Data Loss)",
+          text: "Настройка ежесуточных дампов баз данных PostgreSQL/Redis в независимое облачное хранилище (S3) с глубиной хранения до 30 дней.",
+        },
+        {
+          title: "Чистый и документированный код",
+          text: "Соблюдение стандартов архитектуры (Clean Architecture / SOLID). Курс на TypeScript и строгую типизацию — ваш проект сможет легко поддерживать любая инхаус-команда.",
+        },
+      ],
+    },
     notFoundTitle: "Раздел WIKI не найден",
     notFoundCta: "Вернуться на главную",
+    seoFallback: WIKI_SEO_FALLBACK,
+    seoBySlug: WIKI_SEO,
     ctaTitle: "Нужно похожее решение для бизнеса?",
-    ctaSubtitle: "Обсудим ваш проект и соберем прототип за пару дней.",
+    ctaSubtitle:
+      "Согласуем архитектурный контракт и запустим итеративную доставку — рабочий билд на 3-й день, полный цикл за 7 дней.",
     ctaButton: "Запустить проект →",
     contactHref: "/#contact",
     pages: WIKI_PAGES,
