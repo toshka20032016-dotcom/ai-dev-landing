@@ -23,6 +23,14 @@ export type WikiApiSpecTabKey = "request" | "response200" | "error400";
 
 export type WikiApiSpecs = Record<WikiApiSpecTabKey, string>;
 
+export type WikiRoiSlugConfig = {
+  factorLabel: string;
+  hoursLabel: string;
+  resultHoursLabel: string;
+  resultMoneyLabel: string;
+  ratio: number;
+};
+
 export type WikiRoadmapStepStatus = "done" | "current" | "pending";
 
 export type WikiRoadmapStep = {
@@ -161,24 +169,31 @@ export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
     ],
     apiSpecs: {
       request: `{
-  "update_id": 9485721,
-  "message": {
-    "message_id": 1024,
-    "from": { "id": 418293847, "username": "client_user" },
-    "chat": { "id": 418293847, "type": "private" },
-    "text": "/start",
-    "date": 1718812800
+  "webhook_url": "https://api.client.afanasyev.dev/tg/webhook",
+  "secret_token": "whs_***",
+  "allowed_updates": ["message", "callback_query"],
+  "update": {
+    "update_id": 9485721,
+    "message": {
+      "message_id": 1024,
+      "from": { "id": 418293847, "username": "client_user", "language_code": "ru" },
+      "chat": { "id": 418293847, "type": "private", "first_name": "Алексей" },
+      "text": "/start",
+      "date": 1718812800
+    }
   }
 }`,
       response200: `{
-  "status": "queued",
+  "status": "dispatched",
   "job_id": "tg-msg-7f3a2c",
-  "worker": "celery@worker-02",
-  "estimated_ms": 120
+  "queue": "celery.default",
+  "worker_assigned": "celery@worker-02",
+  "ack_ms": 18
 }`,
       error400: `{
-  "error": "invalid_payload",
-  "detail": "message.text exceeds 4096 chars",
+  "error": "validation_error",
+  "detail": "update.message.text exceeds 4096 chars",
+  "field": "update.message.text",
   "request_id": "req-9d4e1b"
 }`,
     },
@@ -244,21 +259,28 @@ export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
     ],
     apiSpecs: {
       request: `{
-  "target_url": "https://market.example.com/catalog?page=1",
-  "proxy_pool": "residential-eu",
-  "output_format": "postgresql",
-  "max_concurrency": 32
+  "job_type": "async_parser",
+  "target_domain": "market.example.com",
+  "selectors": {
+    "item_card": ".catalog-item",
+    "price": "[data-price]",
+    "title": "h2.product-name"
+  },
+  "proxy_region": "eu-west",
+  "max_depth": 3
 }`,
       response200: `{
   "status": "completed",
-  "records_parsed": 1847,
-  "duration_sec": 42.3,
-  "output": { "table": "catalog_items", "rows_written": 1847 }
+  "session_id": "pw-sess-k8m2x",
+  "session_resolved": true,
+  "items_parsed": 1847,
+  "execution_time_ms": 42300
 }`,
       error400: `{
-  "error": "invalid_target",
-  "detail": "URL scheme must be https",
-  "request_id": "parse-3c8f2a"
+  "error": "rate_limit_exceeded",
+  "detail": "Домен заблокировал запросы — смените прокси или повторите через 3600 с",
+  "blocked_ip": "185.***.***.42",
+  "retry_after_sec": 3600
 }`,
     },
     observability:
@@ -323,21 +345,35 @@ export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
     ],
     apiSpecs: {
       request: `{
-  "action": "get_profile",
-  "user_id": "usr_8k2m9p",
-  "fields": ["name", "role", "deals_count", "last_activity"]
+  "action": "get_clients_deals_matrix",
+  "auth_token": "Bearer crm_***",
+  "params": {
+    "period": "2026-06",
+    "include_schedule": true,
+    "deals_status": ["active", "pending"]
+  }
 }`,
       response200: `{
-  "id": "usr_8k2m9p",
-  "name": "Анна Петрова",
-  "role": "manager",
-  "deals_count": 47,
-  "last_activity": "2026-06-19T10:32:00Z"
+  "active_posts": 12,
+  "schedule": {
+    "2026-06-19": ["09:00", "14:00", "18:00"]
+  },
+  "clients": [
+    {
+      "id": "cl_8k2m9p",
+      "name": "ООО «Ромашка»",
+      "deals": [
+        { "id": "dl_001", "title": "Внедрение CRM", "amount": 280000, "status": "active" }
+      ]
+    }
+  ],
+  "total_deals": 47
 }`,
       error400: `{
-  "error": "validation_error",
-  "detail": "user_id format invalid",
-  "fields": { "user_id": "must match pattern usr_[a-z0-9]+" }
+  "error": "unauthorized",
+  "detail": "auth_token expired or invalid",
+  "code": "AUTH_401",
+  "hint": "Обновите токен в настройках интеграции"
 }`,
     },
     observability:
@@ -1078,31 +1114,33 @@ export const content = {
     roi: {
       badge: "ROI Simulator v1.0",
       title: "Расчет эффективности автоматизации",
-      hoursLabel: "Часов на рутину в неделю:",
       rateLabel: "Стоимость часа специалиста:",
       hoursUnit: "ч.",
-      resultResourceLabel: "Высвобождаемый ресурс:",
       hoursPerWeekUnit: "часов / нед.",
-      monthlyBudgetLabel: "Экономия бюджета в месяц:",
       currency: "₽",
-      savingsFactors: {
+      roiBySlug: {
         "telegram-bots": {
-          label: "Автоматизация рутины (L1 поддержка, рассылки)",
+          factorLabel: "Автоматизация L1-поддержки и рассылок",
+          hoursLabel: "Часов на ручную поддержку в неделю:",
+          resultHoursLabel: "Высвобождаемый ресурс:",
+          resultMoneyLabel: "Экономия бюджета в месяц:",
           ratio: 0.7,
         },
         parsers: {
-          label: "Скорость сбора данных и мониторинга цен",
+          factorLabel: "Сэкономленные часы сотрудников на сбор данных",
+          hoursLabel: "Часов ручного сбора в неделю:",
+          resultHoursLabel: "Сохранённые часы команды:",
+          resultMoneyLabel: "Эквивалент в рублях за месяц:",
           ratio: 0.9,
         },
         crm: {
-          label: "Оптимизация менеджмента и координация постов",
+          factorLabel: "Увеличение конверсии / снижение упущенных лидов",
+          hoursLabel: "Часов на координацию сделок в неделю:",
+          resultHoursLabel: "Сокращение потерь лидов:",
+          resultMoneyLabel: "Дополнительная выручка в месяц:",
           ratio: 0.6,
         },
-      },
-      defaultFactor: {
-        label: "Автоматизация процессов",
-        ratio: 0.5,
-      },
+      } satisfies Record<WikiSlug, WikiRoiSlugConfig>,
     },
     pipeline: {
       title: "CI/CD Pipeline",
