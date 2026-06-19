@@ -640,7 +640,6 @@ export const content = {
       { label: "Процесс", href: "#workflow" },
       { label: "Стоимость", href: "/pricing" },
       { label: "База знаний", href: "/wiki/telegram-bots" },
-      { label: "Связаться", href: "#contact" },
     ],
     cta: "Обсудить проект",
   },
