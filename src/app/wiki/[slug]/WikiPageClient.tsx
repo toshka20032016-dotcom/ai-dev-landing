@@ -187,6 +187,7 @@ export function WikiPageClient({ slug }: WikiPageClientProps) {
             </div>
           </div>
 
+
           <div className="flex flex-col items-center justify-between gap-6 rounded-2xl border border-white/5 bg-gradient-to-r from-[#09090e] to-[#120a16] p-8 sm:flex-row">
             <div>
               <h3 className="text-lg font-bold">{wiki.ctaTitle}</h3>
