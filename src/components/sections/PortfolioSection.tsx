@@ -169,9 +169,10 @@ function DesktopFanCard({
     animationMultiplier,
   );
 
-  const idleX = isFirst ? "-15%" : isCenter ? "0%" : "15%";
-  const idleY = index * 25;
-  const idleRotate = isFirst ? -4 : isCenter ? 0 : 4;
+  // ponytail: keep fan stack readable — each card peeks ~64px below the previous
+  const idleX = isFirst ? "-14%" : isCenter ? "0%" : "14%";
+  const idleY = index * 64;
+  const idleRotate = isFirst ? -3.5 : isCenter ? 0 : 3.5;
 
   return (
     <motion.div
@@ -317,7 +318,7 @@ export default function PortfolioSection() {
       </div>
 
       <div
-        className="relative mx-auto hidden h-[420px] max-w-5xl md:block"
+        className="relative mx-auto hidden h-[500px] max-w-5xl overflow-visible md:block"
         onMouseEnter={() => enable3D && setIsHoveredContainer(true)}
         onMouseLeave={() => setIsHoveredContainer(false)}
       >

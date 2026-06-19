@@ -1,6 +1,5 @@
 import PremiumCanvas from "@/components/canvas/PremiumCanvas";
 import { AppSmoothContainer } from "@/components/ui/AppSmoothContainer";
-import { SystemStatus } from "@/components/ui/SystemStatus";
 import { Header } from "@/components/sections/header";
 import { Hero } from "@/components/sections/hero";
 import { TechTicker } from "@/components/sections/TechTicker";
@@ -46,7 +45,6 @@ export default function Home() {
           <ContactSection />
         </div>
       </main>
-      <SystemStatus />
       <Footer />
     </>
   );
