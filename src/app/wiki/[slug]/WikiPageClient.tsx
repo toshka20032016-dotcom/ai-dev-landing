@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 
 import { ApiTabs } from "@/components/wiki/ApiTabs";
 import { EdgeCasesGrid } from "@/components/wiki/EdgeCasesGrid";
-import { LiveProjectRoadmap } from "@/components/wiki/LiveProjectRoadmap";
 import { TerminalArchitecture } from "@/components/wiki/TerminalArchitecture";
 import { content, isWikiSlug, WIKI_PAGES } from "@/content/ru";
 
@@ -130,8 +129,6 @@ export function WikiPageClient({ slug }: WikiPageClientProps) {
                 </div>
               ))}
             </div>
-
-            <LiveProjectRoadmap />
           </div>
 
           <hr className="border-white/5" />
