@@ -7,6 +7,9 @@ import { useRouter } from "next/navigation";
 import { ApiTabs } from "@/components/wiki/ApiTabs";
 import { EdgeCasesGrid } from "@/components/wiki/EdgeCasesGrid";
 import { LiveProjectRoadmap } from "@/components/wiki/LiveProjectRoadmap";
+import { LiveProjectRoadmap } from "@/components/wiki/LiveProjectRoadmap";
+import { RoiCalculator } from "@/components/wiki/RoiCalculator";
+import { TechConfigurator } from "@/components/wiki/TechConfigurator";
 import { TerminalArchitecture } from "@/components/wiki/TerminalArchitecture";
 import { content, isWikiSlug, WIKI_PAGES } from "@/content/ru";
 
@@ -117,6 +120,9 @@ export function WikiPageClient({ slug }: WikiPageClientProps) {
             <div>
               <h3 className="mb-4 text-sm font-semibold text-gray-300">{wiki.dataFlowTitle}</h3>
               <TerminalArchitecture slug={slug} />
+              <div className="mt-6">
+                <LiveProjectRoadmap />
+              </div>
             </div>
 
             <div className="relative ml-4 space-y-12 border-l border-white/5 pl-6">
@@ -188,6 +194,10 @@ export function WikiPageClient({ slug }: WikiPageClientProps) {
               ))}
             </div>
           </div>
+
+          <RoiCalculator slug={slug} />
+
+          <TechConfigurator />
 
           <div className="flex flex-col items-center justify-between gap-6 rounded-2xl border border-white/5 bg-gradient-to-r from-[#09090e] to-[#120a16] p-8 sm:flex-row">
             <div>
