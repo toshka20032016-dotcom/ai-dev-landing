@@ -137,6 +137,38 @@ export type ArchitectureStackLayer = {
   nodes: readonly ArchitectureNode[];
 };
 
+export type PricingProjectTypeId = "landing" | "parser" | "crm";
+
+export type PricingProjectType = {
+  id: PricingProjectTypeId;
+  label: string;
+  price: number;
+  days: number;
+  description: string;
+};
+
+export type PricingOptionId = "telegram" | "supabase" | "ai";
+
+export type PricingOption = {
+  id: PricingOptionId;
+  label: string;
+  price: number;
+  description: string;
+};
+
+export type PricingBenefitIcon = "zap" | "code" | "shield" | "rocket";
+
+export type PricingBenefit = {
+  icon: PricingBenefitIcon;
+  title: string;
+  description: string;
+};
+
+export type PricingFaqItem = {
+  q: string;
+  a: string;
+};
+
 export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
   "telegram-bots": {
     title: "Умные Telegram-боты",
@@ -605,6 +637,7 @@ export const content = {
     links: [
       { label: "Инжиниринг", href: "#services" },
       { label: "Процесс", href: "#workflow" },
+      { label: "Стоимость", href: "/pricing" },
       { label: "База знаний", href: "/wiki/telegram-bots" },
       { label: "Связаться", href: "#contact" },
     ],
@@ -994,11 +1027,142 @@ export const content = {
     tagline: "Telegram-боты, парсеры, CRM и премиум-лендинги",
     links: [
       { label: "Услуги", href: "#services" },
+      { label: "Стоимость", href: "/pricing" },
       { label: "FAQ", href: "#faq" },
       { label: "Портфолио", href: "#portfolio" },
       { label: "Контакты", href: "#contact" },
       { label: "GitHub", href: "https://github.com" },
     ],
+  },
+  pricingPage: {
+    meta: {
+      title: "Калькулятор стоимости — AFANASYEV.DEV",
+      description:
+        "Интерактивный калькулятор: лендинг от 15 000 ₽, парсер от 20 000 ₽, CRM от 45 000 ₽. Прозрачная смета и сроки за 30 секунд.",
+    },
+    hero: {
+      badge: "Калькулятор сметы v2.0",
+      title: "Прозрачная стоимость. Быстрый запуск.",
+      subtitle:
+        "Соберите конфигурацию проекта за 30 секунд — без скрытых доплат и бесконечных созвонов. Фиксированная цена, production-ready код, деплой на Vercel.",
+    },
+    calculator: {
+      title: "Конфигуратор проекта",
+      projectTypesLabel: "Тип проекта",
+      projectTypes: [
+        {
+          id: "landing",
+          label: "Лендинг",
+          price: 15000,
+          days: 2,
+          description: "Премиум-страница с анимациями, SEO и формой заявки",
+        },
+        {
+          id: "parser",
+          label: "Парсер",
+          price: 20000,
+          days: 3,
+          description: "Сбор данных, мониторинг цен, anti-ban и cron-расписание",
+        },
+        {
+          id: "crm",
+          label: "CRM",
+          price: 45000,
+          days: 8,
+          description: "Кастомная панель, роли, аналитика и интеграции",
+        },
+      ] satisfies readonly PricingProjectType[],
+      optionsLabel: "Дополнительные модули",
+      options: [
+        {
+          id: "telegram",
+          label: "Telegram-бот",
+          price: 7000,
+          description: "Уведомления, команды, webhook-интеграция с продуктом",
+        },
+        {
+          id: "supabase",
+          label: "Supabase / БД",
+          price: 10000,
+          description: "Auth, PostgreSQL, RLS-политики и realtime-подписки",
+        },
+        {
+          id: "ai",
+          label: "AI-модуль",
+          price: 15000,
+          description: "LLM-контекст, RAG, генерация контента и классификация",
+        },
+      ] satisfies readonly PricingOption[],
+      sliderLabel: "Страницы / сложность",
+      sliderMin: 1,
+      sliderMax: 10,
+      sliderUnit: "ед.",
+      sliderHint: "+3 000 ₽ за каждый шаг выше базового",
+      urgentLabel: "Срочная сборка",
+      urgentHint: "+30% к стоимости · срок сокращается вдвое",
+      resultTitle: "Итоговая смета",
+      resultDaysLabel: "Срок реализации",
+      resultDaysUnit: "дн.",
+      resultIncludes: "Включено: код, деплой, документация",
+      resultCta: "Обсудить в Telegram",
+      resultCtaHref: "https://t.me/Zavod_Worker",
+      pricePerPageStep: 3000,
+      urgentMultiplier: 1.3,
+      currency: "₽",
+    },
+    benefits: {
+      title: "Почему это выгодно?",
+      subtitle:
+        "Vibecoder-подход: AI-ускоренная разработка без потери качества. Вы платите за результат, а не за часы в Jira.",
+      items: [
+        {
+          icon: "zap",
+          title: "MVP за 2–8 дней",
+          description:
+            "Итеративная доставка: рабочий билд на 3-й день, полный цикл — до недели. Без воды и бесконечных согласований.",
+        },
+        {
+          icon: "code",
+          title: "Production-ready код",
+          description:
+            "TypeScript strict, CI/CD, документированная архитектура. Код передаётся вашей инхаус-команде без технического долга.",
+        },
+        {
+          icon: "shield",
+          title: "Фиксированная цена",
+          description:
+            "Смета фиксируется до старта. Никаких «а вот тут ещё доплатите» — все опции видны в калькуляторе заранее.",
+        },
+        {
+          icon: "rocket",
+          title: "Деплой из коробки",
+          description:
+            "Vercel Edge, Docker, мониторинг. Проект живёт в production с первого дня, а не лежит на локалке разработчика.",
+        },
+      ] satisfies readonly PricingBenefit[],
+    },
+    faq: {
+      title: "Частые вопросы о стоимости",
+      subtitle: "Ответы на типичные вопросы перед стартом проекта",
+      items: [
+        {
+          q: "Можно ли изменить конфигурацию после фиксации сметы?",
+          a: "Да. Базовый scope фиксируется в архитектурном контракте до старта. Дополнительные модули добавляются отдельной итерацией с пересчётом сроков — без скрытых доплат.",
+        },
+        {
+          q: "Что входит в базовую стоимость?",
+          a: "Исходный код, деплой на Vercel или VPS, базовая документация, 7 дней пост-релизной поддержки. Хостинг и API-ключи сторонних сервисов оплачиваются отдельно.",
+        },
+        {
+          q: "Как работает срочная сборка?",
+          a: "При включении опции стоимость умножается на 1.3, а срок сокращается вдвое (минимум 1 день). Приоритет в очереди, параллельные задачи и ускоренный CI/CD.",
+        },
+        {
+          q: "Какие способы оплаты доступны?",
+          a: "50% предоплата при старте, 50% после приёмки MVP. Для юрлиц — договор и счёт. Для физлиц — перевод или криптовалюта по согласованию.",
+        },
+      ] satisfies readonly PricingFaqItem[],
+    },
   },
   wiki: {
     headerBrand: "AFANASYEV.DEV // WIKI",
