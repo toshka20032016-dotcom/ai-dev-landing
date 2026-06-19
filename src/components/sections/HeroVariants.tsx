@@ -10,6 +10,7 @@ import {
 import { ArrowRight, Cpu, Layers, Zap } from "lucide-react";
 
 import { AnimatedGridPattern } from "@/components/magicui/animated-grid-pattern";
+import { DevAvatarPhoto, SplitStackPhoto } from "@/components/ui/AuthorPhotoVariants";
 import { buttonVariants } from "@/components/ui/button";
 import { HeroTerminal } from "@/components/ui/HeroTerminal";
 import { content } from "@/content/ru";
@@ -48,6 +49,7 @@ type VariantContentProps = {
 
 export function HeroOption1({ pageContext, animationMultiplier }: VariantContentProps) {
   const copy = content.heroVariants.variant1;
+  const { ownerStatus } = content.hero.authorPortrait;
   const calculatorHref = useCalculatorHref(pageContext);
   const { isEasterEggActive } = useEasterEgg();
 
@@ -72,6 +74,27 @@ export function HeroOption1({ pageContext, animationMultiplier }: VariantContent
         </span>
         {copy.badge}
       </motion.span>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 * animationMultiplier, delay: 0.05 * animationMultiplier }}
+        className="mb-6 flex flex-wrap items-center gap-4"
+      >
+        <DevAvatarPhoto animationMultiplier={animationMultiplier} />
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="font-mono text-sm text-white/80 md:text-base">{copy.greeting}</p>
+            <span className="inline-flex items-center gap-1.5 font-mono text-[10px] tracking-wider text-emerald-400/90">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              </span>
+              {ownerStatus}
+            </span>
+          </div>
+        </div>
+      </motion.div>
 
       <motion.h1
         initial={{ opacity: 0, y: 24 }}
@@ -272,14 +295,18 @@ function HeroTerminalColumn({
   rotateX,
   rotateY,
   animationMultiplier,
+  variant,
 }: {
   terminalRef: React.RefObject<HTMLDivElement | null>;
   enable3D: boolean;
   rotateX: ReturnType<typeof useSpring>;
   rotateY: ReturnType<typeof useSpring>;
   animationMultiplier: number;
+  variant: 1 | 2 | 3;
 }) {
   const { isEasterEggActive } = useEasterEgg();
+  const isSplitStack = variant === 2;
+  const enableAboutTab = variant === 3;
 
   return (
     <motion.div
@@ -291,6 +318,7 @@ function HeroTerminalColumn({
       style={enable3D ? { perspective: 2000 } : undefined}
     >
       <div className={cn("relative w-full max-w-xl", GPU_LAYER)}>
+        {isSplitStack && <SplitStackPhoto animationMultiplier={animationMultiplier} />}
         <div
           aria-hidden
           className={cn(
@@ -299,7 +327,7 @@ function HeroTerminalColumn({
           )}
         />
         <motion.div
-          className={cn("relative w-full", GPU_LAYER)}
+          className={cn("relative w-full", isSplitStack && "z-10", GPU_LAYER)}
           style={
             enable3D
               ? {
@@ -310,7 +338,10 @@ function HeroTerminalColumn({
               : undefined
           }
         >
-          <HeroTerminal />
+          <HeroTerminal
+            enableAboutTab={enableAboutTab}
+            defaultTab={enableAboutTab ? "about" : undefined}
+          />
         </motion.div>
       </div>
     </motion.div>
@@ -443,6 +474,7 @@ export function HeroSection({
               rotateX={rotateX}
               rotateY={rotateY}
               animationMultiplier={animationMultiplier}
+              variant={variant}
             />
           </div>
         </div>
