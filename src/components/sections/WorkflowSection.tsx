@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useSpring } from "framer-motion";
 import { GPU_LAYER } from "@/lib/performance";
-import { Cpu, SearchCode, ShieldCheck } from "lucide-react";
+import { Cpu, Plug, SearchCode, ShieldCheck } from "lucide-react";
 
 import { content, type WorkflowIcon } from "@/content/ru";
 import { SectionParallax } from "@/components/ui/section-parallax";
@@ -12,12 +12,14 @@ import { usePerformanceController } from "@/hooks/usePerformanceController";
 const icons: Record<WorkflowIcon, typeof SearchCode> = {
   searchCode: SearchCode,
   cpu: Cpu,
+  plug: Plug,
   shieldCheck: ShieldCheck,
 };
 
 const iconColors: Record<WorkflowIcon, string> = {
   searchCode: "text-cyan-400",
   cpu: "text-purple-400",
+  plug: "text-amber-400",
   shieldCheck: "text-emerald-400",
 };
 
@@ -25,6 +27,7 @@ const badgeStyles: Record<WorkflowIcon, string> = {
   searchCode:
     "border-cyan-400/25 bg-cyan-400/10 text-cyan-300 shadow-[0_0_14px_rgba(6,182,212,0.35)]",
   cpu: "border-purple-400/25 bg-purple-400/10 text-purple-300 shadow-[0_0_14px_rgba(168,85,247,0.35)]",
+  plug: "border-amber-400/25 bg-amber-400/10 text-amber-300 shadow-[0_0_14px_rgba(251,191,36,0.35)]",
   shieldCheck:
     "border-emerald-400/25 bg-emerald-400/10 text-emerald-300 shadow-[0_0_14px_rgba(52,211,153,0.35)]",
 };
