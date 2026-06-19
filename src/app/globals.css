@@ -24,6 +24,10 @@
 }
 
 html {
+  scroll-behavior: auto;
+}
+
+html:not(.lenis) {
   scroll-behavior: smooth;
 }
 

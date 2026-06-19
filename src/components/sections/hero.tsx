@@ -154,14 +154,14 @@ export function Hero() {
               className={`mt-10 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center ${GPU_LAYER}`}
             >
               <a
-                href="#contact"
+                href="/#contact"
                 className={cn(buttonVariants({ size: "lg" }))}
               >
                 {content.hero.primaryCta}
                 <ArrowRight className="h-4 w-4" />
               </a>
               <a
-                href="#services"
+                href="/#services"
                 className={cn(buttonVariants({ size: "lg", variant: "outline" }))}
               >
                 {content.hero.secondaryCta}

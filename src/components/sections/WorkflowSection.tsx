@@ -1,12 +1,9 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useSpring } from "framer-motion";
-import { GPU_LAYER } from "@/lib/performance";
+import { motion } from "framer-motion";
 import { Cpu, Plug, SearchCode, ShieldCheck } from "lucide-react";
 
 import { content, type WorkflowIcon } from "@/content/ru";
-import { SectionParallax } from "@/components/ui/section-parallax";
 import { usePerformanceController } from "@/hooks/usePerformanceController";
 
 const icons: Record<WorkflowIcon, typeof SearchCode> = {
@@ -34,27 +31,14 @@ const badgeStyles: Record<WorkflowIcon, string> = {
 
 export function WorkflowSection() {
   const { workflow } = content;
-  const containerRef = useRef<HTMLDivElement>(null);
   const { disableHeavyEffects, motionTransition } = usePerformanceController();
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start 0.8", "end 0.2"],
-  });
-
-  const scaleY = useSpring(scrollYProgress, {
-    stiffness: disableHeavyEffects ? 500 : 120,
-    damping: disableHeavyEffects ? 50 : 28,
-    restDelta: 0.001,
-  });
 
   return (
     <section
       id="workflow"
-      ref={containerRef}
       className="relative z-10 mx-auto max-w-5xl px-4 py-24"
     >
-      <SectionParallax className="mb-20 text-center md:text-left">
+      <div className="mb-20 text-center md:text-left">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -78,15 +62,18 @@ export function WorkflowSection() {
         </motion.h2>
 
         <p className="max-w-xl text-base font-light text-gray-400">{workflow.subtitle}</p>
-      </SectionParallax>
+      </div>
 
       <div className="relative inline-block w-full text-left">
         <div className="absolute bottom-0 left-4 top-0 w-[2px] -translate-x-1/2 bg-white/5 md:left-1/2" />
 
         {!disableHeavyEffects && (
           <motion.div
-            style={{ scaleY }}
-            className={`absolute bottom-0 left-4 top-0 z-10 w-[3px] origin-top -translate-x-1/2 rounded-full bg-gradient-to-b from-purple-400 via-pink-500 to-cyan-400 shadow-[0_0_20px_rgba(168,85,247,0.7),0_0_40px_rgba(236,72,153,0.35)] md:left-1/2 ${GPU_LAYER}`}
+            initial={{ scaleY: 0 }}
+            whileInView={{ scaleY: 1 }}
+            viewport={{ once: true, margin: "-20% 0px" }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute bottom-0 left-4 top-0 z-10 w-[3px] origin-top -translate-x-1/2 rounded-full bg-gradient-to-b from-purple-400 via-pink-500 to-cyan-400 shadow-[0_0_20px_rgba(168,85,247,0.7),0_0_40px_rgba(236,72,153,0.35)] md:left-1/2"
           />
         )}
 
@@ -137,7 +124,7 @@ export function WorkflowSection() {
                       <div className="rounded-xl border border-white/5 bg-white/[0.02] p-2.5 text-gray-400 transition-colors group-hover:bg-white/[0.05]">
                         <Icon className={`h-5 w-5 ${iconColor}`} />
                       </div>
-                      <span className="font-mono text-xs tracking-wider text-gray-500">
+                      <span className="font-mono text-xs tracking-wider text-gray-400">
                         {step.phase}
                       </span>
                     </div>

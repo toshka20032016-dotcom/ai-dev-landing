@@ -112,7 +112,7 @@ export function PricingSection() {
               </ul>
 
               <a
-                href="#contact"
+                href="/#contact"
                 className={`relative inline-flex w-full items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold backdrop-blur-sm transition-all duration-300 ${styles.button}`}
               >
                 {pricing.ctaLabel}

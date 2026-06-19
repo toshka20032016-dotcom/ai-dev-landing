@@ -636,8 +636,8 @@ export const content = {
   nav: {
     brand: "blackcraftlab",
     links: [
-      { label: "Инжиниринг", href: "#services" },
-      { label: "Процесс", href: "#workflow" },
+      { label: "Инжиниринг", href: "/#services" },
+      { label: "Процесс", href: "/#workflow" },
       { label: "Стоимость", href: "/pricing" },
       { label: "База знаний", href: "/wiki/telegram-bots" },
     ],
@@ -1026,11 +1026,11 @@ export const content = {
     copyright: "© 2026 blackcraftlab · AI-разработка",
     tagline: "Telegram-боты, парсеры, CRM и премиум-лендинги",
     links: [
-      { label: "Услуги", href: "#services" },
+      { label: "Услуги", href: "/#services" },
       { label: "Стоимость", href: "/pricing" },
-      { label: "FAQ", href: "#faq" },
-      { label: "Портфолио", href: "#portfolio" },
-      { label: "Контакты", href: "#contact" },
+      { label: "FAQ", href: "/#faq" },
+      { label: "Портфолио", href: "/#portfolio" },
+      { label: "Контакты", href: "/#contact" },
       { label: "GitHub", href: "https://github.com" },
     ],
   },

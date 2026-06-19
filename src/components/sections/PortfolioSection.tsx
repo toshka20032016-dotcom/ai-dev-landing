@@ -265,6 +265,7 @@ function PortfolioCarousel({
               type="button"
               role="tab"
               aria-selected={index === activeIndex}
+              aria-label={`${project.title}, ${index + 1} из ${items.length}`}
               onClick={() => setActiveIndex(index)}
               className={`h-2 rounded-full transition-all ${
                 index === activeIndex

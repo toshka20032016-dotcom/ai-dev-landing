@@ -1,17 +1,41 @@
+import dynamic from "next/dynamic";
 import PremiumCanvas from "@/components/canvas/PremiumCanvas";
 import { AppSmoothContainer } from "@/components/ui/AppSmoothContainer";
 import { Header } from "@/components/sections/header";
 import { Hero } from "@/components/sections/hero";
 import { TechTicker } from "@/components/sections/TechTicker";
 import { ServicesSection } from "@/components/sections/ServicesSection";
-import ArchitectureStack from "@/components/sections/ArchitectureStack";
-import { KpiSection } from "@/components/sections/KpiSection";
-import { WorkflowSection } from "@/components/sections/WorkflowSection";
-import PortfolioSection from "@/components/sections/PortfolioSection";
-import { PricingSection } from "@/components/sections/PricingSection";
-import { FaqSection } from "@/components/sections/FaqSection";
-import ContactSection from "@/components/sections/ContactSection";
 import { Footer } from "@/components/sections/footer";
+
+const ArchitectureStack = dynamic(
+  () => import("@/components/sections/ArchitectureStack"),
+);
+const ContactSection = dynamic(
+  () => import("@/components/sections/ContactSection"),
+);
+const FaqSection = dynamic(() =>
+  import("@/components/sections/FaqSection").then((m) => ({
+    default: m.FaqSection,
+  })),
+);
+const KpiSection = dynamic(() =>
+  import("@/components/sections/KpiSection").then((m) => ({
+    default: m.KpiSection,
+  })),
+);
+const PortfolioSection = dynamic(
+  () => import("@/components/sections/PortfolioSection"),
+);
+const PricingSection = dynamic(() =>
+  import("@/components/sections/PricingSection").then((m) => ({
+    default: m.PricingSection,
+  })),
+);
+const WorkflowSection = dynamic(() =>
+  import("@/components/sections/WorkflowSection").then((m) => ({
+    default: m.WorkflowSection,
+  })),
+);
 
 function SectionDivider() {
   return (

@@ -10,23 +10,28 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced) return;
 
-    const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+    const root = document.documentElement;
+    root.classList.add("lenis");
+
+    // ponytail: no Framer scroll-sync — native scroll + whileInView only; upgrade: lenis.on('scroll') → motion scrollY
+    const lenis = new Lenis({ duration: 0.85, smoothWheel: true, touchMultiplier: 1.2 });
     lenisRef.current = lenis;
 
     const onAnchorClick = (event: MouseEvent) => {
       const anchor = (event.target as Element).closest<HTMLAnchorElement>(
-        'a[href^="#"]',
+        'a[href^="#"], a[href^="/#"]',
       );
       if (!anchor) return;
 
       const href = anchor.getAttribute("href");
-      if (!href || href === "#") return;
+      if (!href || href === "#" || href === "/#") return;
 
-      const target = document.querySelector(href);
+      const hash = href.startsWith("/#") ? href.slice(1) : href;
+      const target = document.querySelector(hash);
       if (!target) return;
 
       event.preventDefault();
-      lenis.scrollTo(href, { offset: -96 });
+      lenis.scrollTo(hash, { offset: -96 });
     };
 
     document.addEventListener("click", onAnchorClick);
@@ -42,6 +47,7 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
       document.removeEventListener("click", onAnchorClick);
       cancelAnimationFrame(frame);
       lenis.destroy();
+      root.classList.remove("lenis");
     };
   }, []);
 

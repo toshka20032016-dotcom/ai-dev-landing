@@ -55,7 +55,7 @@ export function Header() {
           className="hidden items-center gap-0.5 lg:flex"
         >
           {nav.links.map((link) => {
-            const className = `rounded-lg px-3 py-1.5 font-mono text-[11px] tracking-wide text-white/55 transition-all duration-300 ${accentHover}`;
+            const className = `rounded-lg px-3 py-1.5 font-mono text-[11px] tracking-wide text-white/70 transition-all duration-300 ${accentHover}`;
 
             if (isInternalPath(link.href)) {
               return (
@@ -75,7 +75,7 @@ export function Header() {
 
         <div className="flex shrink-0 items-center gap-3 pr-2">
           <a
-            href="#contact"
+            href="/#contact"
             className={`hidden rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-[10px] font-semibold tracking-wide text-white/80 transition-all duration-300 sm:inline-flex ${accentHover}`}
           >
             {nav.cta}
