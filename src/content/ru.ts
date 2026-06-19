@@ -332,14 +332,15 @@ export const content = {
     ],
   },
   hero: {
-    badge: "Open Source · Next.js · Vercel",
-    title: "Разрабатываю и запускаю цифровые продукты со скоростью мысли",
+    badge: "AI-native · Next.js · Vercel",
+    title:
+      "Разрабатываю и запускаю цифровые продукты в 3 раза быстрее классических студий",
     stackBadge: {
       label: "Стек: Next.js 16 + Claude",
       href: "https://github.com/toshka20032016-dotcom",
     },
     subtitle:
-      "Собираем премиум-лендинги с анимациями, glassmorphism и адаптивом. Стек полностью open source.",
+      "AI-native разработка полного цикла: от идеи до готового production-сервиса на Next.js и Tailwind за считанные дни. Без раздутых штатов и бесконечных созвонов.",
     primaryCta: "Начать проект",
     secondaryCta: "Смотреть кейсы",
     authorPortrait: {
@@ -507,6 +508,10 @@ export const content = {
     title: "Обсудить проект",
     subtitle:
       "Опишите вашу задачу или оставьте контакты. Я изучу логику процессов и свяжусь с вами в течение пары часов.",
+    telegram: {
+      label: "Написать в Telegram",
+      href: "https://t.me/Zavod_Worker",
+    },
     tagsLabel: "Выберите тип задачи (кликните):",
     serviceTags: [
       { id: "bot", label: "Telegram Бот" },
