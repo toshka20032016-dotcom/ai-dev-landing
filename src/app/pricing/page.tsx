@@ -495,14 +495,23 @@ function ModuleCheckbox({ module: mod, checked, onChange }: ModuleCheckboxProps)
 }
 
 type ComplexitySliderProps = {
-  value: number;
+  sliderValue: number;
+  displayValue: number;
   min: number;
   max: number;
-  onChange: (value: number) => void;
+  onSliderChange: (value: number) => void;
+  onSnap: () => void;
 };
 
-function ComplexitySlider({ value, min, max, onChange }: ComplexitySliderProps) {
-  const percent = ((value - min) / (max - min)) * 100;
+function ComplexitySlider({
+  sliderValue,
+  displayValue,
+  min,
+  max,
+  onSliderChange,
+  onSnap,
+}: ComplexitySliderProps) {
+  const percent = ((sliderValue - min) / (max - min)) * 100;
 
   return (
     <div className="space-y-3">
@@ -568,7 +577,7 @@ function ComplexitySlider({ value, min, max, onChange }: ComplexitySliderProps) 
           Страницы / сложность
         </p>
         <span className="font-mono text-sm font-bold text-violet-300">
-          <AnimatedNumber value={value} format="decimal" /> ед.
+          <AnimatedNumber value={displayValue} format="decimal" /> ед.
         </span>
       </div>
 
@@ -577,10 +586,17 @@ function ComplexitySlider({ value, min, max, onChange }: ComplexitySliderProps) 
         className="pricing-range w-full"
         min={min}
         max={max}
-        step={1}
-        value={value}
-        onChange={(e) => onChange(parseInt(e.target.value, 10))}
+        step={0.01}
+        value={sliderValue}
+        onChange={(e) => onSliderChange(parseFloat(e.target.value))}
+        onPointerUp={onSnap}
+        onMouseUp={onSnap}
+        onTouchEnd={onSnap}
+        onKeyUp={onSnap}
         aria-label="Страницы / сложность"
+        aria-valuenow={displayValue}
+        aria-valuemin={min}
+        aria-valuemax={max}
       />
 
       <p className="text-xs text-gray-500">
@@ -910,7 +926,19 @@ function PricingCalculator() {
     ai: false,
   });
   const [pages, setPages] = useState<number>(SLIDER_MIN);
+  const [sliderValue, setSliderValue] = useState<number>(SLIDER_MIN);
   const [urgent, setUrgent] = useState(false);
+
+  const handleSliderChange = (value: number) => {
+    setSliderValue(value);
+  };
+
+  const snapSlider = () => {
+    const snapped = Math.round(sliderValue);
+    const clamped = Math.min(SLIDER_MAX, Math.max(SLIDER_MIN, snapped));
+    setPages(clamped);
+    setSliderValue(clamped);
+  };
 
   const selectedProject = useMemo(
     () =>
@@ -1029,10 +1057,12 @@ function PricingCalculator() {
                   className="overflow-hidden"
                 >
                   <ComplexitySlider
-                    value={pages}
+                    sliderValue={sliderValue}
+                    displayValue={Math.round(sliderValue)}
                     min={SLIDER_MIN}
                     max={SLIDER_MAX}
-                    onChange={setPages}
+                    onSliderChange={handleSliderChange}
+                    onSnap={snapSlider}
                   />
                 </motion.div>
               )}
