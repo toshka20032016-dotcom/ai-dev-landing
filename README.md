@@ -41,6 +41,17 @@ src/
 3. Use Playwright or Browser MCP for visual QA
 4. Deploy via Vercel MCP
 
+## Environment variables
+
+Visit notifications are sent to Telegram when env vars are set on Vercel:
+
+```
+TELEGRAM_TOKEN=...   # from @BotFather
+TELEGRAM_CHAT_ID=... # from @userinfobot
+```
+
+Redeploy after adding or changing these variables in Vercel → Settings → Environment Variables.
+
 ## Customize
 
 Edit `src/lib/design-tokens.ts` and `src/content/ru.ts` first, then sections.
