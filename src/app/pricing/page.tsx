@@ -20,6 +20,7 @@ import {
   Shield,
   Sparkles,
   Database,
+  Terminal,
   Zap,
   type LucideIcon,
 } from "lucide-react";
@@ -27,27 +28,113 @@ import {
 import PremiumCanvas from "@/components/canvas/PremiumCanvas";
 import { Footer } from "@/components/sections/footer";
 import { Header } from "@/components/sections/header";
-import {
-  content,
-  type PricingBenefitIcon,
-  type PricingOptionId,
-  type PricingProjectTypeId,
-} from "@/content/ru";
+import { content, type PricingBenefitIcon } from "@/content/ru";
 import { cn } from "@/lib/utils";
 
 const SPRING = { type: "spring" as const, stiffness: 320, damping: 28 };
 const SPRING_SOFT = { type: "spring" as const, stiffness: 200, damping: 24 };
 
-const PROJECT_ICONS: Record<PricingProjectTypeId, LucideIcon> = {
+const PAGE_PRICE_STEP = 1000;
+const URGENT_MULTIPLIER = 1.3;
+const URGENT_DAYS_FACTOR = 0.6;
+const TELEGRAM_USERNAME = "Zavod_Worker";
+
+const INFO_NOTICE =
+  "[INFO]: Ссылка сформирована. После перехода в Telegram просто отправьте готовый текст в чат.";
+
+type ProjectTypeId = "landing" | "parser" | "crm" | "script";
+type ModuleId = "telegram" | "supabase" | "ai";
+
+type ProjectType = {
+  id: ProjectTypeId;
+  label: string;
+  price: number;
+  days: number;
+  description: string;
+};
+
+type ModuleOption = {
+  id: ModuleId;
+  label: string;
+  price: number;
+  days: number;
+  description: string;
+};
+
+const PROJECT_TYPES: readonly ProjectType[] = [
+  {
+    id: "landing",
+    label: "Лендинг",
+    price: 5900,
+    days: 2,
+    description: "Премиум-страница с анимациями, SEO и формой заявки",
+  },
+  {
+    id: "parser",
+    label: "Парсер",
+    price: 9900,
+    days: 3,
+    description: "Сбор данных, мониторинг цен, anti-ban и cron-расписание",
+  },
+  {
+    id: "crm",
+    label: "CRM",
+    price: 19900,
+    days: 5,
+    description: "Кастомная панель, роли, аналитика и интеграции",
+  },
+  {
+    id: "script",
+    label: "Микро-скрипт / Бот",
+    price: 2900,
+    days: 1,
+    description:
+      "Простые парсеры, автоматизация таблиц, легкие скрипты и боты-автоответчики",
+  },
+];
+
+const MODULES: readonly ModuleOption[] = [
+  {
+    id: "telegram",
+    label: "Telegram-бот",
+    price: 3000,
+    days: 1,
+    description: "Уведомления, команды, webhook-интеграция с продуктом",
+  },
+  {
+    id: "supabase",
+    label: "Supabase / БД",
+    price: 4000,
+    days: 2,
+    description: "Auth, PostgreSQL, RLS-политики и realtime-подписки",
+  },
+  {
+    id: "ai",
+    label: "AI-модуль",
+    price: 6000,
+    days: 2,
+    description: "LLM-контекст, RAG, генерация контента и классификация",
+  },
+];
+
+const PROJECT_ICONS: Record<ProjectTypeId, LucideIcon> = {
   landing: LayoutTemplate,
   parser: Code2,
   crm: Database,
+  script: Terminal,
 };
 
-const OPTION_ICONS: Record<PricingOptionId, LucideIcon> = {
+const MODULE_ICONS: Record<ModuleId, LucideIcon> = {
   telegram: Bot,
   supabase: Database,
   ai: Sparkles,
+};
+
+const TECH_STACKS: Record<ProjectTypeId, readonly string[]> = {
+  landing: ["Next.js", "Tailwind", "Vercel"],
+  parser: ["Python", "Playwright", "Asyncio"],
+  crm: ["Supabase", "PostgreSQL", "TypeScript", "Docker"],
+  script: ["Python", "Node.js", "Axios", "Cron"],
 };
 
 const BENEFIT_ICONS: Record<PricingBenefitIcon, LucideIcon> = {
@@ -57,52 +144,137 @@ const BENEFIT_ICONS: Record<PricingBenefitIcon, LucideIcon> = {
   rocket: Rocket,
 };
 
-const TELEGRAM_USERNAME = "Zavod_Worker";
+const SLIDER_MIN = 1;
+const SLIDER_MAX = 10;
 
-const TECH_STACKS: Record<PricingProjectTypeId, readonly string[]> = {
-  landing: ["Next.js", "Tailwind", "Vercel"],
-  parser: ["Python", "Playwright", "Asyncio"],
-  crm: ["Supabase", "PostgreSQL", "TypeScript", "Docker"],
+function usesPageSlider(id: ProjectTypeId): boolean {
+  return id === "landing" || id === "crm";
+}
+
+function comboDiscountPercent(moduleCount: number): number {
+  if (moduleCount >= 3) return 10;
+  if (moduleCount >= 2) return 5;
+  return 0;
+}
+
+type CalculateTotalInput = {
+  basePrice: number;
+  baseDays: number;
+  pages: number;
+  selectedModules: readonly ModuleOption[];
+  urgent: boolean;
 };
 
-const INFO_NOTICE =
-  "[INFO]: Ссылка сформирована. После перехода в Telegram просто отправьте готовый текст в чат.";
-
-function buildTelegramMessage(params: {
-  type: string;
-  options: string[];
-  volume: number;
-  price: number;
+type CalculateTotalResult = {
+  basePrice: number;
+  baseDays: number;
+  pages: number;
+  pagesExtra: number;
+  modulesSum: number;
+  modulesDays: number;
+  subtotal: number;
+  moduleCount: number;
+  discountPercent: number;
+  discountAmount: number;
+  afterDiscount: number;
+  urgent: boolean;
+  final: number;
   days: number;
-}): string {
-  const optionsText =
-    params.options.length > 0 ? params.options.join(", ") : "—";
-  return `Привет! Рассчитал проект на сайте.
-🛠️ Тип: ${params.type}
-📦 Опции: ${optionsText}
-📊 Объем/Сложность: ${params.volume.toFixed(2)}
-💰 Итоговая стоимость: ${params.price.toLocaleString("ru-RU")} ₽
-⏱️ Срок: ${params.days} дней.`;
+};
+
+function calculateTotal(input: CalculateTotalInput): CalculateTotalResult {
+  const pagesExtra = Math.max(0, input.pages - 1) * PAGE_PRICE_STEP;
+  const modulesSum = input.selectedModules.reduce((sum, m) => sum + m.price, 0);
+  const modulesDays = input.selectedModules.reduce((sum, m) => sum + m.days, 0);
+  const subtotal = input.basePrice + pagesExtra + modulesSum;
+  const moduleCount = input.selectedModules.length;
+
+  // ponytail: combo % applies to subtotal (base + modules + pages) before urgent surcharge
+  const discountPercent = comboDiscountPercent(moduleCount);
+  const discountAmount = Math.round(subtotal * (discountPercent / 100));
+  const afterDiscount = subtotal - discountAmount;
+
+  const final = Math.round(
+    afterDiscount * (input.urgent ? URGENT_MULTIPLIER : 1),
+  );
+
+  const rawDays = input.baseDays + modulesDays;
+  const days = input.urgent
+    ? Math.max(1, Math.ceil(rawDays * URGENT_DAYS_FACTOR))
+    : rawDays;
+
+  return {
+    basePrice: input.basePrice,
+    baseDays: input.baseDays,
+    pages: input.pages,
+    pagesExtra,
+    modulesSum,
+    modulesDays,
+    subtotal,
+    moduleCount,
+    discountPercent,
+    discountAmount,
+    afterDiscount,
+    urgent: input.urgent,
+    final,
+    days,
+  };
 }
 
-function buildTelegramUrl(message: string): string {
+function buildTelegramMessage(
+  project: ProjectType,
+  selectedModules: readonly ModuleOption[],
+  calc: CalculateTotalResult,
+): string {
+  const lines: string[] = [
+    "Здравствуйте! Посчитал проект у вас на сайте. Мне понравились условия, хочу предложить сотрудничество и обсудить детали.",
+    "",
+    "Вот какая конфигурация мне нужна:",
+    `• Основной продукт: ${project.label} (База: ${calc.basePrice.toLocaleString("ru-RU")} ₽, ${calc.baseDays} дн.)`,
+  ];
+
+  if (usesPageSlider(project.id) && calc.pages > 1) {
+    lines.push(
+      `• Объем / Сложность: ${calc.pages} ед. (Доп. страницы: +${calc.pagesExtra.toLocaleString("ru-RU")} ₽)`,
+    );
+  }
+
+  if (selectedModules.length > 0) {
+    lines.push("• Подключенные модули:");
+    for (const mod of selectedModules) {
+      lines.push(`  - ${mod.label} (+${mod.price.toLocaleString("ru-RU")} ₽)`);
+    }
+  } else {
+    lines.push("• Дополнительные модули: Не требуются");
+  }
+
+  if (calc.discountPercent > 0) {
+    lines.push(
+      `• Пакетная скидка: Выбрано несколько модулей, применена скидка ${calc.discountPercent}% (-${calc.discountAmount.toLocaleString("ru-RU")} ₽)`,
+    );
+  }
+
+  if (calc.urgent) {
+    lines.push(
+      "• Режим сборки: ⚡ СРОЧНЫЙ (+30% к стоимости, срок уменьшен на 40%)",
+    );
+  }
+
+  lines.push(
+    "",
+    "---",
+    "📊 ИТОГОВАЯ СМЕТА ПРОЕКТА:",
+    `💰 Финальная стоимость: ${calc.final.toLocaleString("ru-RU")} ₽`,
+    `⏱️ Расчетный срок: ~${calc.days} дн.`,
+    "",
+    "Подскажите, когда вам удобно созвониться или списать здесь, чтобы запустить проект в работу?",
+  );
+
+  return lines.join("\n");
+}
+
+function generateTgLink(message: string): string {
   return `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(message)}`;
-}
-
-function calcTotal(
-  basePrice: number,
-  pages: number,
-  optionsSum: number,
-  urgent: boolean,
-  pricePerPageStep: number,
-  urgentMultiplier: number,
-): number {
-  const subtotal = basePrice + (pages - 1) * pricePerPageStep + optionsSum;
-  return Math.round(subtotal * (urgent ? urgentMultiplier : 1));
-}
-
-function calcDays(baseDays: number, urgent: boolean): number {
-  return urgent ? Math.max(1, Math.ceil(baseDays / 2)) : baseDays;
 }
 
 function useAnimatedNumber(value: number) {
@@ -126,7 +298,7 @@ function AnimatedNumber({
   const spring = useAnimatedNumber(value);
   const display = useTransform(spring, (v) =>
     format === "decimal"
-      ? v.toFixed(2)
+      ? v.toFixed(0)
       : Math.round(v).toLocaleString("ru-RU"),
   );
 
@@ -173,20 +345,18 @@ function PricingHero() {
 }
 
 type ProjectTypeCardsProps = {
-  selected: PricingProjectTypeId;
-  onSelect: (id: PricingProjectTypeId) => void;
+  selected: ProjectTypeId;
+  onSelect: (id: ProjectTypeId) => void;
 };
 
 function ProjectTypeCards({ selected, onSelect }: ProjectTypeCardsProps) {
-  const { projectTypes, projectTypesLabel } = content.pricingPage.calculator;
-
   return (
     <div className="space-y-3">
       <p className="font-mono text-xs uppercase tracking-widest text-gray-500">
-        {projectTypesLabel}
+        Тип проекта
       </p>
-      <div className="grid gap-3 sm:grid-cols-3">
-        {projectTypes.map((type) => {
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {PROJECT_TYPES.map((type) => {
           const Icon = PROJECT_ICONS[type.id];
           const isSelected = selected === type.id;
 
@@ -237,7 +407,9 @@ function ProjectTypeCards({ selected, onSelect }: ProjectTypeCardsProps) {
                   )}
                 </span>
               </div>
-              <p className="relative mt-3 font-semibold text-white">{type.label}</p>
+              <p className="relative mt-3 text-sm font-semibold leading-snug text-white">
+                {type.label}
+              </p>
               <p className="relative mt-1 font-mono text-lg font-bold text-cyan-300">
                 {type.price.toLocaleString("ru-RU")} ₽
               </p>
@@ -255,24 +427,14 @@ function ProjectTypeCards({ selected, onSelect }: ProjectTypeCardsProps) {
   );
 }
 
-type OptionCheckboxProps = {
-  id: PricingOptionId;
-  label: string;
-  price: number;
-  description: string;
+type ModuleCheckboxProps = {
+  module: ModuleOption;
   checked: boolean;
-  onChange: (id: PricingOptionId, checked: boolean) => void;
+  onChange: (id: ModuleId, checked: boolean) => void;
 };
 
-function OptionCheckbox({
-  id,
-  label,
-  price,
-  description,
-  checked,
-  onChange,
-}: OptionCheckboxProps) {
-  const Icon = OPTION_ICONS[id];
+function ModuleCheckbox({ module: mod, checked, onChange }: ModuleCheckboxProps) {
+  const Icon = MODULE_ICONS[mod.id];
 
   return (
     <motion.label
@@ -290,7 +452,7 @@ function OptionCheckbox({
         type="checkbox"
         className="sr-only"
         checked={checked}
-        onChange={(e) => onChange(id, e.target.checked)}
+        onChange={(e) => onChange(mod.id, e.target.checked)}
       />
       <div
         className={cn(
@@ -321,12 +483,12 @@ function OptionCheckbox({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <Icon className="h-4 w-4 text-indigo-400" />
-          <span className="font-medium text-white">{label}</span>
+          <span className="font-medium text-white">{mod.label}</span>
           <span className="ml-auto font-mono text-sm font-bold text-indigo-300">
-            +{price.toLocaleString("ru-RU")} ₽
+            +{mod.price.toLocaleString("ru-RU")} ₽
           </span>
         </div>
-        <p className="mt-1 text-xs text-gray-500">{description}</p>
+        <p className="mt-1 text-xs text-gray-500">{mod.description}</p>
       </div>
     </motion.label>
   );
@@ -340,7 +502,6 @@ type ComplexitySliderProps = {
 };
 
 function ComplexitySlider({ value, min, max, onChange }: ComplexitySliderProps) {
-  const { sliderLabel, sliderUnit, sliderHint } = content.pricingPage.calculator;
   const percent = ((value - min) / (max - min)) * 100;
 
   return (
@@ -404,10 +565,10 @@ function ComplexitySlider({ value, min, max, onChange }: ComplexitySliderProps) 
 
       <div className="flex items-center justify-between">
         <p className="font-mono text-xs uppercase tracking-widest text-gray-500">
-          {sliderLabel}
+          Страницы / сложность
         </p>
         <span className="font-mono text-sm font-bold text-violet-300">
-          <AnimatedNumber value={value} format="decimal" /> {sliderUnit}
+          <AnimatedNumber value={value} format="decimal" /> ед.
         </span>
       </div>
 
@@ -416,13 +577,15 @@ function ComplexitySlider({ value, min, max, onChange }: ComplexitySliderProps) 
         className="pricing-range w-full"
         min={min}
         max={max}
-        step={0.01}
+        step={1}
         value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        aria-label={sliderLabel}
+        onChange={(e) => onChange(parseInt(e.target.value, 10))}
+        aria-label="Страницы / сложность"
       />
 
-      <p className="text-xs text-gray-500">{sliderHint}</p>
+      <p className="text-xs text-gray-500">
+        +{PAGE_PRICE_STEP.toLocaleString("ru-RU")} ₽ за каждую единицу выше базовой
+      </p>
     </div>
   );
 }
@@ -433,16 +596,16 @@ type UrgentToggleProps = {
 };
 
 function UrgentToggle({ enabled, onChange }: UrgentToggleProps) {
-  const { urgentLabel, urgentHint } = content.pricingPage.calculator;
-
   return (
     <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-slate-950/40 p-4 backdrop-blur-md">
       <div>
         <p className="flex items-center gap-2 font-medium text-white">
           <Zap className="h-4 w-4 text-amber-400" />
-          {urgentLabel}
+          Срочная сборка
         </p>
-        <p className="mt-1 text-xs text-gray-500">{urgentHint}</p>
+        <p className="mt-1 text-xs text-gray-500">
+          +30% к стоимости · срок сокращается на 40%
+        </p>
       </div>
       <button
         type="button"
@@ -472,11 +635,9 @@ function UrgentToggle({ enabled, onChange }: UrgentToggleProps) {
 }
 
 type ResultCardProps = {
-  total: number;
-  days: number;
-  urgent: boolean;
+  calc: CalculateTotalResult;
   selectedLabel: string;
-  projectTypeId: PricingProjectTypeId;
+  projectTypeId: ProjectTypeId;
   telegramUrl: string;
   logLines: readonly [string, string, string];
 };
@@ -500,23 +661,12 @@ function MicroLogger({ lines }: { lines: readonly [string, string, string] }) {
 }
 
 function ResultCard({
-  total,
-  days,
-  urgent,
+  calc,
   selectedLabel,
   projectTypeId,
   telegramUrl,
   logLines,
 }: ResultCardProps) {
-  const {
-    resultTitle,
-    resultDaysLabel,
-    resultDaysUnit,
-    resultIncludes,
-    resultCta,
-    currency,
-  } = content.pricingPage.calculator;
-
   const stack = TECH_STACKS[projectTypeId];
 
   return (
@@ -528,9 +678,20 @@ function ResultCard({
       <div className="pointer-events-none absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-violet-500/10 blur-3xl" />
 
       <p className="font-mono text-[10px] uppercase tracking-widest text-cyan-400/80">
-        {resultTitle}
+        Итоговая смета
       </p>
       <p className="mt-1 text-sm text-gray-400">{selectedLabel}</p>
+
+      {calc.discountPercent > 0 && (
+        <motion.p
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={SPRING}
+          className="mt-3 inline-block rounded-md border border-cyan-400/40 bg-cyan-500/10 px-2.5 py-1 font-mono text-[11px] font-semibold tracking-wide text-cyan-300 shadow-[0_0_16px_rgba(6,182,212,0.35)]"
+        >
+          [ КОМБО-СКИДКА: -{calc.discountPercent}% ]
+        </motion.p>
+      )}
 
       <div className="mt-3 flex flex-wrap gap-1.5">
         {stack.map((tag) => (
@@ -545,23 +706,23 @@ function ResultCard({
 
       <div className="mt-4 flex items-baseline gap-1">
         <motion.span
-          key={total}
+          key={calc.final}
           initial={{ opacity: 0.5, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={SPRING}
           className="font-mono text-4xl font-extrabold tracking-tight text-white md:text-5xl"
         >
-          <AnimatedNumber value={total} />
+          <AnimatedNumber value={calc.final} />
         </motion.span>
-        <span className="font-mono text-xl text-gray-400">{currency}</span>
+        <span className="font-mono text-xl text-gray-400">₽</span>
       </div>
 
       <div className="mt-4 flex items-center gap-3 rounded-xl border border-white/5 bg-white/[0.03] px-4 py-3">
         <div>
-          <p className="text-xs text-gray-500">{resultDaysLabel}</p>
+          <p className="text-xs text-gray-500">Срок реализации</p>
           <p className="font-mono text-lg font-bold text-violet-300">
-            <AnimatedNumber value={days} /> {resultDaysUnit}
-            {urgent && (
+            <AnimatedNumber value={calc.days} /> дн.
+            {calc.urgent && (
               <span className="ml-2 text-[10px] font-normal text-amber-400">
                 ⚡ срочно
               </span>
@@ -572,7 +733,7 @@ function ResultCard({
 
       <p className="mt-3 flex items-center gap-1.5 text-xs text-gray-500">
         <Check className="h-3.5 w-3.5 text-emerald-400" />
-        {resultIncludes}
+        Включено: код, деплой, документация
       </p>
 
       <p className="mt-5 rounded-lg border border-cyan-500/15 bg-slate-900/50 px-3 py-2 font-mono text-[11px] leading-relaxed text-cyan-300/90">
@@ -594,7 +755,7 @@ function ResultCard({
         >
           <MessageCircle className="h-4 w-4" />
         </motion.span>
-        {resultCta}
+        Обсудить в Telegram
       </motion.a>
 
       <MicroLogger lines={logLines} />
@@ -707,7 +868,10 @@ function PricingFaq() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.28, ease: [0.04, 0.62, 0.23, 0.98] }}
+                      transition={{
+                        duration: 0.28,
+                        ease: [0.04, 0.62, 0.23, 0.98],
+                      }}
                     >
                       <p className="border-t border-white/5 px-6 pb-4 pt-3 text-sm leading-relaxed text-gray-400">
                         {item.a}
@@ -726,7 +890,10 @@ function PricingFaq() {
           viewport={{ once: true }}
           className="mt-8 text-center text-sm text-gray-500"
         >
-          <Link href="/" className="text-cyan-400 transition-colors hover:text-cyan-300">
+          <Link
+            href="/"
+            className="text-cyan-400 transition-colors hover:text-cyan-300"
+          >
             ← На главную
           </Link>
         </motion.p>
@@ -736,68 +903,74 @@ function PricingFaq() {
 }
 
 function PricingCalculator() {
-  const calc = content.pricingPage.calculator;
-  const [projectType, setProjectType] = useState<PricingProjectTypeId>("landing");
-  const [options, setOptions] = useState<Record<PricingOptionId, boolean>>({
+  const [projectType, setProjectType] = useState<ProjectTypeId>("landing");
+  const [modules, setModules] = useState<Record<ModuleId, boolean>>({
     telegram: false,
     supabase: false,
     ai: false,
   });
-  const [pages, setPages] = useState<number>(calc.sliderMin);
+  const [pages, setPages] = useState<number>(SLIDER_MIN);
   const [urgent, setUrgent] = useState(false);
 
-  const selectedType = useMemo(
-    () => calc.projectTypes.find((t) => t.id === projectType) ?? calc.projectTypes[0],
-    [calc.projectTypes, projectType],
-  );
-
-  const optionsSum = useMemo(
+  const selectedProject = useMemo(
     () =>
-      calc.options.reduce(
-        (sum, opt) => sum + (options[opt.id] ? opt.price : 0),
-        0,
-      ),
-    [calc.options, options],
+      PROJECT_TYPES.find((t) => t.id === projectType) ?? PROJECT_TYPES[0],
+    [projectType],
   );
 
-  const total = calcTotal(
-    selectedType.price,
-    pages,
-    optionsSum,
-    urgent,
-    calc.pricePerPageStep,
-    calc.urgentMultiplier,
+  const showSlider = usesPageSlider(projectType);
+  const effectivePages = showSlider ? pages : 1;
+
+  const selectedModules = useMemo(
+    () => MODULES.filter((m) => modules[m.id]),
+    [modules],
   );
 
-  const days = calcDays(selectedType.days, urgent);
-
-  const selectedOptionLabels = useMemo(
-    () => calc.options.filter((opt) => options[opt.id]).map((opt) => opt.label),
-    [calc.options, options],
+  const calc = useMemo(
+    () =>
+      calculateTotal({
+        basePrice: selectedProject.price,
+        baseDays: selectedProject.days,
+        pages: effectivePages,
+        selectedModules,
+        urgent,
+      }),
+    [selectedProject, effectivePages, selectedModules, urgent],
   );
 
   const telegramUrl = useMemo(() => {
-    const message = buildTelegramMessage({
-      type: selectedType.label,
-      options: selectedOptionLabels,
-      volume: pages,
-      price: total,
-      days,
-    });
-    return buildTelegramUrl(message);
-  }, [selectedType.label, selectedOptionLabels, pages, total, days]);
+    const message = buildTelegramMessage(
+      selectedProject,
+      selectedModules,
+      calc,
+    );
+    return generateTgLink(message);
+  }, [selectedProject, selectedModules, calc]);
 
-  const logLines = useMemo(
-    (): [string, string, string] => [
-      `init :: ${selectedType.label.toLowerCase()} · vol=${pages.toFixed(2)}`,
-      `mods :: ${selectedOptionLabels.length > 0 ? selectedOptionLabels.join(" + ") : "base only"}`,
-      `done :: ${total.toLocaleString("ru-RU")} ₽ · ${days}d${urgent ? " [rush]" : ""}`,
-    ],
-    [selectedType.label, pages, selectedOptionLabels, total, days, urgent],
-  );
+  const logLines = useMemo((): [string, string, string] => {
+    const modsLabel =
+      selectedModules.length > 0
+        ? selectedModules.map((m) => m.label).join(" + ")
+        : "base only";
+    return [
+      `init :: ${selectedProject.label.toLowerCase()} · vol=${effectivePages}`,
+      `mods :: ${modsLabel}`,
+      calc.discountPercent > 0
+        ? `[system]: применен пакетный тариф`
+        : `done :: ${calc.final.toLocaleString("ru-RU")} ₽ · ${calc.days}d${urgent ? " [rush]" : ""}`,
+    ];
+  }, [
+    selectedProject.label,
+    effectivePages,
+    selectedModules,
+    calc.discountPercent,
+    calc.final,
+    calc.days,
+    urgent,
+  ]);
 
-  const handleOptionChange = (id: PricingOptionId, checked: boolean) => {
-    setOptions((prev) => ({ ...prev, [id]: checked }));
+  const handleModuleChange = (id: ModuleId, checked: boolean) => {
+    setModules((prev) => ({ ...prev, [id]: checked }));
   };
 
   return (
@@ -810,7 +983,7 @@ function PricingCalculator() {
           transition={SPRING}
           className="mb-8 text-center text-2xl font-bold text-white md:text-3xl"
         >
-          {calc.title}
+          Конфигуратор проекта
         </motion.h2>
 
         <div className="grid gap-8 lg:grid-cols-[1fr_340px] lg:items-start">
@@ -821,33 +994,49 @@ function PricingCalculator() {
             transition={SPRING}
             className="space-y-8 rounded-2xl border border-white/10 bg-slate-950/30 p-6 backdrop-blur-md md:p-8"
           >
-            <ProjectTypeCards selected={projectType} onSelect={setProjectType} />
+            <ProjectTypeCards
+              selected={projectType}
+              onSelect={setProjectType}
+            />
 
             <div className="space-y-3">
               <p className="font-mono text-xs uppercase tracking-widest text-gray-500">
-                {calc.optionsLabel}
+                Дополнительные модули
               </p>
               <div className="space-y-3">
-                {calc.options.map((opt) => (
-                  <OptionCheckbox
-                    key={opt.id}
-                    id={opt.id}
-                    label={opt.label}
-                    price={opt.price}
-                    description={opt.description}
-                    checked={options[opt.id]}
-                    onChange={handleOptionChange}
+                {MODULES.map((mod) => (
+                  <ModuleCheckbox
+                    key={mod.id}
+                    module={mod}
+                    checked={modules[mod.id]}
+                    onChange={handleModuleChange}
                   />
                 ))}
               </div>
             </div>
 
-            <ComplexitySlider
-              value={pages}
-              min={calc.sliderMin}
-              max={calc.sliderMax}
-              onChange={setPages}
-            />
+            <AnimatePresence initial={false}>
+              {showSlider && (
+                <motion.div
+                  key="complexity-slider"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{
+                    duration: 0.28,
+                    ease: [0.04, 0.62, 0.23, 0.98],
+                  }}
+                  className="overflow-hidden"
+                >
+                  <ComplexitySlider
+                    value={pages}
+                    min={SLIDER_MIN}
+                    max={SLIDER_MAX}
+                    onChange={setPages}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <UrgentToggle enabled={urgent} onChange={setUrgent} />
           </motion.div>
@@ -859,10 +1048,8 @@ function PricingCalculator() {
             transition={{ ...SPRING, delay: 0.1 }}
           >
             <ResultCard
-              total={total}
-              days={days}
-              urgent={urgent}
-              selectedLabel={selectedType.label}
+              calc={calc}
+              selectedLabel={selectedProject.label}
               projectTypeId={projectType}
               telegramUrl={telegramUrl}
               logLines={logLines}
