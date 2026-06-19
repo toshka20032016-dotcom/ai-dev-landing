@@ -1,32 +1,43 @@
 "use client";
 
+import Link from "next/link";
+import { useState } from "react";
 import { motion } from "framer-motion";
 
-import { content, type WikiConfiguratorProjectType } from "@/content/ru";
+import {
+  content,
+  type WikiConfiguratorLoadLevel,
+  type WikiConfiguratorProjectType,
+} from "@/content/ru";
 
-const STATUS_STYLES: Record<
-  WikiRoadmapStepStatus,
-  { card: string; num: string; badge: string }
-> = {
-  done: {
-    card: "bg-black/20 border-emerald-500/20",
-    num: "text-gray-500",
-    badge: "bg-emerald-500/5 border-emerald-500/10 text-emerald-400",
-  },
-  current: {
-    card: "bg-[#0d0d11] border-[#00d2ff]/30 shadow-[0_0_20px_rgba(0,210,255,0.03)]",
-    num: "text-[#00d2ff]",
-    badge: "bg-[#00d2ff]/5 border-[#00d2ff]/10 text-[#00d2ff]",
-  },
-  pending: {
-    card: "bg-transparent border-white/5 opacity-50",
-    num: "text-gray-500",
-    badge: "bg-white/5 border-white/5 text-gray-500",
-  },
+type ConfiguratorAnswers = {
+  type?: WikiConfiguratorProjectType;
+  load?: WikiConfiguratorLoadLevel;
 };
 
+function getRecommendedStack(answers: ConfiguratorAnswers): string {
+  const { configurator } = content.wiki;
+  const type = answers.type ?? "tg";
+  const load = answers.load ?? "mid";
+  return configurator.stacks[type][load];
+}
+
 export function TechConfigurator() {
-  const { roadmap } = content.wiki;
+  const { configurator, contactHref } = content.wiki;
+  const [step, setStep] = useState(1);
+  const [answers, setAnswers] = useState<ConfiguratorAnswers>({});
+
+  const questionCount = configurator.questions.length;
+  const isFinal = step > questionCount;
+
+  const handleSelect = (qId: string, value: string) => {
+    setAnswers((prev) => ({ ...prev, [qId]: value }));
+    if (step < questionCount) setStep(step + 1);
+    else setStep(configurator.totalSteps);
+  };
+
+  const stack = getRecommendedStack(answers);
+  const finalText = configurator.finalDescription.replace("{stack}", stack);
 
   return (
     <motion.div
@@ -34,46 +45,51 @@ export function TechConfigurator() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4 }}
-      className="w-full space-y-6 rounded-xl border border-white/5 bg-[#07070a] p-6"
+      className="mx-auto w-full max-w-2xl rounded-xl border border-white/5 bg-[#0d0d11] p-6"
     >
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <span className="rounded-md border border-[#ff4b91]/10 bg-[#ff4b91]/5 px-2 py-0.5 font-mono text-[10px] uppercase tracking-widest text-[#ff4b91]">
-            {roadmap.badge}
-          </span>
-          <h4 className="mt-2 text-lg font-bold tracking-tight text-white">{roadmap.title}</h4>
-        </div>
-        <div className="flex items-center gap-2 rounded-lg border border-white/5 bg-white/5 px-3 py-1.5 font-mono text-xs text-gray-400">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-          {roadmap.nextRelease}
-        </div>
+      <div className="mb-4 flex items-center justify-between font-mono text-xs text-gray-500">
+        <span>{configurator.headerLabel}</span>
+        <span>
+          {configurator.stepPrefix} {step} {configurator.stepOf} {configurator.totalSteps}
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        {roadmap.steps.map((step) => {
-          const styles = STATUS_STYLES[step.status];
-
-          return (
-            <div
-              key={step.num}
-              className={`relative flex min-h-[140px] flex-col justify-between rounded-xl border p-4 transition-all ${styles.card}`}
-            >
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className={`font-mono text-xs font-bold ${styles.num}`}>{step.num}</span>
-                  <span
-                    className={`rounded-md border px-2 py-0.5 font-mono text-[9px] ${styles.badge}`}
-                  >
-                    {step.badge}
-                  </span>
-                </div>
-                <h5 className="mt-3 text-sm font-semibold text-white">{step.name}</h5>
-                <p className="mt-1.5 text-xs leading-relaxed text-gray-400">{step.desc}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {!isFinal ? (
+        <div className="space-y-4">
+          <h4 className="text-base font-bold tracking-tight text-white">
+            {configurator.questions[step - 1].title}
+          </h4>
+          <div className="grid grid-cols-1 gap-3">
+            {configurator.questions[step - 1].options.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => handleSelect(configurator.questions[step - 1].id, opt.value)}
+                className="group flex w-full flex-col gap-0.5 rounded-xl border border-white/5 bg-black/20 p-4 text-left transition-all hover:border-white/10 hover:bg-white/[0.02]"
+              >
+                <span className="text-sm font-semibold text-white transition-colors group-hover:text-[#00d2ff]">
+                  {opt.label}
+                </span>
+                <span className="text-xs text-gray-400">{opt.sub}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4 py-4 text-center">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full border border-emerald-500/20 bg-emerald-500/10 text-lg font-bold text-emerald-400">
+            OK
+          </div>
+          <h4 className="text-base font-bold text-white">{configurator.finalTitle}</h4>
+          <p className="mx-auto max-w-md text-xs leading-relaxed text-gray-400">{finalText}</p>
+          <Link
+            href={contactHref}
+            className="mt-2 inline-block rounded-xl bg-white px-5 py-2.5 text-xs font-semibold text-black transition-colors hover:bg-gray-200"
+          >
+            {configurator.ctaButton}
+          </Link>
+        </div>
+      )}
     </motion.div>
   );
 }
