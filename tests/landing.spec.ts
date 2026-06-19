@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("landing page renders hero and features", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.locator("#features")).toBeVisible();
+  await expect(page.locator("#services")).toBeVisible();
 });
 
 test("FAQ accordion opens", async ({ page }) => {

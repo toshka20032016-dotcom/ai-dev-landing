@@ -8,6 +8,7 @@ import ArchitectureStack from "@/components/sections/ArchitectureStack";
 import { KpiSection } from "@/components/sections/KpiSection";
 import { WorkflowSection } from "@/components/sections/WorkflowSection";
 import PortfolioSection from "@/components/sections/PortfolioSection";
+import { PricingSection } from "@/components/sections/PricingSection";
 import { FaqSection } from "@/components/sections/FaqSection";
 import ContactSection from "@/components/sections/ContactSection";
 import { Footer } from "@/components/sections/footer";
@@ -32,13 +33,15 @@ export default function Home() {
           <SectionDivider />
           <ServicesSection />
           <SectionDivider />
+          <WorkflowSection />
+          <SectionDivider />
           <KpiSection />
           <SectionDivider />
           <ArchitectureStack />
           <SectionDivider />
-          <WorkflowSection />
-          <SectionDivider />
           <PortfolioSection />
+          <SectionDivider />
+          <PricingSection />
           <SectionDivider />
           <FaqSection />
           <SectionDivider />

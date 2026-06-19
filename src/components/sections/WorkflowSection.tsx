@@ -21,6 +21,14 @@ const iconColors: Record<WorkflowIcon, string> = {
   shieldCheck: "text-emerald-400",
 };
 
+const badgeStyles: Record<WorkflowIcon, string> = {
+  searchCode:
+    "border-cyan-400/25 bg-cyan-400/10 text-cyan-300 shadow-[0_0_14px_rgba(6,182,212,0.35)]",
+  cpu: "border-purple-400/25 bg-purple-400/10 text-purple-300 shadow-[0_0_14px_rgba(168,85,247,0.35)]",
+  shieldCheck:
+    "border-emerald-400/25 bg-emerald-400/10 text-emerald-300 shadow-[0_0_14px_rgba(52,211,153,0.35)]",
+};
+
 export function WorkflowSection() {
   const { workflow } = content;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -112,11 +120,17 @@ export function WorkflowSection() {
                   className="w-full pl-12 md:w-[calc(50%-32px)] md:pl-0"
                 >
                   <div className="glass-card group relative overflow-hidden rounded-3xl border border-white/5 bg-slate-950/30 p-6 backdrop-blur-lg transition-colors duration-300 hover:border-white/10 md:p-8">
-                    <span className="pointer-events-none absolute right-6 top-4 select-none font-mono text-7xl font-black text-white/[0.02] transition-colors duration-300 group-hover:text-white/[0.04]">
+                    <span
+                      className={`absolute right-4 top-4 z-10 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-wide backdrop-blur-sm ${badgeStyles[step.icon]}`}
+                    >
+                      {step.badge}
+                    </span>
+
+                    <span className="pointer-events-none absolute right-6 top-12 select-none font-mono text-7xl font-black text-white/[0.02] transition-colors duration-300 group-hover:text-white/[0.04]">
                       {step.num}
                     </span>
 
-                    <div className="mb-4 flex items-center gap-3">
+                    <div className="mb-4 flex items-center gap-3 pt-2">
                       <div className="rounded-xl border border-white/5 bg-white/[0.02] p-2.5 text-gray-400 transition-colors group-hover:bg-white/[0.05]">
                         <Icon className={`h-5 w-5 ${iconColor}`} />
                       </div>
@@ -125,18 +139,13 @@ export function WorkflowSection() {
                       </span>
                     </div>
 
-                    <h3 className="mb-3 text-lg font-bold text-white transition-all group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400 group-hover:bg-clip-text group-hover:text-transparent md:text-xl">
+                    <h3 className="mb-3 text-xl font-bold text-white transition-all group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400 group-hover:bg-clip-text group-hover:text-transparent md:text-2xl">
                       {step.title}
                     </h3>
 
-                    <p className="mb-6 text-sm font-light leading-relaxed text-gray-400">
+                    <p className="text-sm font-light leading-relaxed text-gray-400">
                       {step.description}
                     </p>
-
-                    <div className="inline-flex items-center gap-1.5 rounded-md border border-white/5 bg-white/[0.02] px-2.5 py-1 text-[11px] font-medium text-gray-400">
-                      <span className="h-1.5 w-1.5 rounded-full bg-purple-400" />
-                      {step.badge}
-                    </div>
                   </div>
                 </motion.div>
               </div>

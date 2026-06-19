@@ -32,7 +32,7 @@ export function ServicesSection() {
   );
 
   return (
-    <section id="features" className="relative z-10 mx-auto max-w-7xl px-4 py-24">
+    <section id="services" className="relative z-10 mx-auto max-w-7xl px-4 py-24">
       <SectionParallax className="mb-20 text-center">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
@@ -97,16 +97,16 @@ export function ServicesSection() {
                 delay: index * 0.15 * animationMultiplier,
                 ease: [0.4, 0, 0.2, 1],
               }}
-              whileHover={{ y: -6, transition: cardTransition }}
+              whileHover={{ y: -4, transition: cardTransition }}
               style={
                 {
                   "--glow-color": service.glowColor,
                 } as React.CSSProperties
               }
-              className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/5 bg-slate-950/40 p-8 shadow-2xl backdrop-blur-lg transition-all duration-300 hover:border-white/15 ${
+              className={`group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/5 bg-slate-950/40 p-8 shadow-2xl backdrop-blur-lg transition-all duration-300 ${
                 isEasterEggActive
-                  ? "hover:shadow-[0_0_40px_rgba(236,72,153,0.15)]"
-                  : "hover:shadow-[0_0_40px_var(--glow-color)]"
+                  ? "hover:border-pink-400/30 hover:shadow-[0_0_30px_rgba(236,72,153,0.15)]"
+                  : "hover:border-cyan-400/25 hover:shadow-[0_0_30px_rgba(0,210,255,0.1)]"
               } ${GPU_LAYER}`}
             >
               <BorderBeam
