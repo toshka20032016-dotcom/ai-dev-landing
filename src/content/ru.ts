@@ -435,6 +435,8 @@ export const content = {
     previewLabel: "Production Build",
     githubLabel: "Исходный код",
     demoLabel: "Запустить демо",
+    prevLabel: "Предыдущий проект",
+    nextLabel: "Следующий проект",
     items: PORTFOLIO_ITEMS,
   },
   process: {

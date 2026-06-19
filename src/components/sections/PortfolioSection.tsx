@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowUpRight, ExternalLink, Layers } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, ChevronRight, ExternalLink, Layers } from "lucide-react";
 
 import { content, type PortfolioItem } from "@/content/ru";
 import { SectionParallax } from "@/components/ui/section-parallax";
@@ -83,161 +83,82 @@ function ProjectLinks({
   );
 }
 
-function MobileProjectCard({
-  project,
-  previewLabel,
-  githubLabel,
-  demoLabel,
-  isEasterEggActive,
-}: {
-  project: PortfolioItem;
-  previewLabel: string;
-  githubLabel: string;
-  demoLabel: string;
-  isEasterEggActive: boolean;
-}) {
-  return (
-    <motion.article
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -8 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className={`group glass-card flex flex-col gap-6 rounded-3xl p-4 md:hidden ${GPU_LAYER}`}
-    >
-      <ProjectPreview project={project} previewLabel={previewLabel} />
-      <div>
-        <h3
-          className={`mb-3 text-xl font-bold text-white transition-colors duration-300 ${
-            isEasterEggActive ? "group-hover:text-pink-300" : "group-hover:text-cyan-300"
-          }`}
-        >
-          {project.title}
-        </h3>
-        <p className="mb-5 text-sm leading-relaxed font-light text-gray-400">
-          {project.description}
-        </p>
-        <div className="mb-5 flex flex-wrap gap-1.5">
-          {project.techs.map((tech) => (
-            <span
-              key={tech}
-              className="rounded-md border border-white/5 bg-white/[0.02] px-2.5 py-1 font-mono text-xs text-gray-400"
-            >
-              {tech}
-            </span>
-          ))}
-        </div>
-        <ProjectLinks
-          project={project}
-          githubLabel={githubLabel}
-          demoLabel={demoLabel}
-          isEasterEggActive={isEasterEggActive}
-        />
-      </div>
-    </motion.article>
-  );
+function getCarouselPosition(index: number, activeIndex: number, length: number) {
+  let position = index - activeIndex;
+  if (position < -1) position += length;
+  if (position > 1) position -= length;
+  return position;
 }
 
-function DesktopFanCard({
+function CarouselCard({
   project,
-  index,
-  isHoveredContainer,
+  position,
+  isMobile,
   previewLabel,
   githubLabel,
   demoLabel,
   isEasterEggActive,
-  animationMultiplier,
-  motionTransition,
+  carouselTransition,
 }: {
   project: PortfolioItem;
-  index: number;
-  isHoveredContainer: boolean;
+  position: number;
+  isMobile: boolean;
   previewLabel: string;
   githubLabel: string;
   demoLabel: string;
   isEasterEggActive: boolean;
-  animationMultiplier: number;
-  motionTransition: PerformanceMotionTransition;
+  carouselTransition: PerformanceMotionTransition;
 }) {
-  const isFirst = index === 0;
-  const isCenter = index === 1;
+  const isActive = position === 0;
+  const isLeft = position === -1;
+  const isRight = position === 1;
 
-  const fanTransition = scaleMotionTransition(
-    motionTransition.type === "spring"
-      ? { ...motionTransition, stiffness: 110, damping: 22 }
-      : motionTransition,
-    animationMultiplier,
-  );
+  if (!isMobile && !isActive && !isLeft && !isRight) return null;
+  if (isMobile && !isActive) return null;
 
-  // ponytail: keep fan stack readable — each card peeks ~64px below the previous
-  const idleX = isFirst ? "-14%" : isCenter ? "0%" : "14%";
-  const idleY = index * 64;
-  const idleRotate = isFirst ? -3.5 : isCenter ? 0 : 3.5;
+  const sideX = isMobile ? 0 : isLeft ? -300 : isRight ? 300 : 0;
 
   return (
     <motion.div
-      className={`absolute top-0 left-1/2 h-[360px] w-[760px] max-w-[90vw] origin-center -translate-x-1/2 transform-gpu will-change-transform ${GPU_LAYER}`}
-      style={{ zIndex: index + 1 }}
+      layout
+      style={{ zIndex: isActive ? 30 : 10 }}
       animate={{
-        x: isHoveredContainer
-          ? isFirst
-            ? "-28%"
-            : isCenter
-              ? "0%"
-              : "28%"
-          : idleX,
-        y: isHoveredContainer ? (isCenter ? -15 : 10) : idleY,
-        rotate: isHoveredContainer
-          ? isFirst
-            ? -8
-            : isCenter
-              ? 0
-              : 8
-          : idleRotate,
-        scale: isHoveredContainer
-          ? isCenter
-            ? 1.02
-            : 0.98
-          : 1 - index * 0.02,
-        z: isHoveredContainer && isCenter ? 30 : 0,
+        x: sideX,
+        scale: isActive ? 1 : isMobile ? 1 : 0.88,
+        rotate: isActive ? 0 : isLeft ? -6 : isRight ? 6 : 0,
+        opacity: isActive ? 1 : isMobile ? 0 : 0.45,
       }}
-      transition={fanTransition}
-      whileHover={{
-        y: -25,
-        z: 50,
-        scale: 1.04,
-        transition:
-          fanTransition.type === "tween"
-            ? fanTransition
-            : { duration: 0.25 * animationMultiplier, ease: "easeOut" },
-      }}
+      transition={carouselTransition}
+      className={`absolute top-1/2 left-1/2 w-[92%] max-w-[760px] -translate-x-1/2 -translate-y-1/2 ${GPU_LAYER} ${
+        isActive ? "pointer-events-auto" : "pointer-events-none"
+      }`}
     >
       <article
-        className={`group glass-card h-full cursor-pointer rounded-3xl p-5 shadow-2xl transition-shadow duration-300 ${
-          isEasterEggActive && isHoveredContainer
+        className={`group glass-card rounded-3xl p-4 shadow-2xl transition-shadow duration-300 sm:p-5 ${
+          isEasterEggActive && isActive
             ? "shadow-[0_0_40px_rgba(236,72,153,0.15)]"
             : ""
         }`}
       >
-        <div className="flex h-full flex-col gap-5 md:flex-row">
+        <div className="flex flex-col gap-5 md:flex-row">
           <ProjectPreview project={project} previewLabel={previewLabel} />
           <div className="flex min-w-0 flex-1 flex-col justify-between">
             <div>
               <h3
-                className={`mb-2 text-lg font-bold text-white transition-colors ${
+                className={`mb-2 text-lg font-bold text-white transition-colors md:text-xl ${
                   isEasterEggActive ? "group-hover:text-pink-300" : "group-hover:text-cyan-300"
                 }`}
               >
                 {project.title}
               </h3>
-              <p className="mb-4 line-clamp-3 text-sm leading-relaxed font-light text-gray-400">
+              <p className="mb-4 line-clamp-4 text-sm leading-relaxed font-light text-gray-400 md:line-clamp-3">
                 {project.description}
               </p>
               <div className="mb-4 flex flex-wrap gap-1.5">
-                {project.techs.slice(0, 4).map((tech) => (
+                {project.techs.slice(0, isMobile ? undefined : 4).map((tech) => (
                   <span
                     key={tech}
-                    className="rounded-md border border-white/5 bg-white/[0.02] px-2 py-0.5 font-mono text-[10px] text-gray-400"
+                    className="rounded-md border border-white/5 bg-white/[0.02] px-2 py-0.5 font-mono text-[10px] text-gray-400 md:text-xs"
                   >
                     {tech}
                   </span>
@@ -257,11 +178,28 @@ function DesktopFanCard({
   );
 }
 
-export default function PortfolioSection() {
-  const { portfolio } = content;
-  const { isEasterEggActive, animationMultiplier } = useEasterEgg();
-  const { disableHeavyEffects, motionTransition } = usePerformanceController();
-  const [isHoveredContainer, setIsHoveredContainer] = useState(false);
+function PortfolioCarousel({
+  items,
+  previewLabel,
+  prevLabel,
+  nextLabel,
+  githubLabel,
+  demoLabel,
+  isEasterEggActive,
+  animationMultiplier,
+  motionTransition,
+}: {
+  items: readonly PortfolioItem[];
+  previewLabel: string;
+  prevLabel: string;
+  nextLabel: string;
+  githubLabel: string;
+  demoLabel: string;
+  isEasterEggActive: boolean;
+  animationMultiplier: number;
+  motionTransition: PerformanceMotionTransition;
+}) {
+  const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(true);
 
   useEffect(() => {
@@ -271,7 +209,83 @@ export default function PortfolioSection() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const enable3D = !disableHeavyEffects && !isMobile;
+  const carouselTransition = scaleMotionTransition(
+    motionTransition.type === "spring"
+      ? { ...motionTransition, stiffness: 300, damping: 25 }
+      : motionTransition,
+    animationMultiplier,
+  );
+
+  const goNext = useCallback(() => {
+    setActiveIndex((prev) => (prev + 1) % items.length);
+  }, [items.length]);
+
+  const goPrev = useCallback(() => {
+    setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+  }, [items.length]);
+
+  return (
+    <div className="relative mx-auto w-full max-w-5xl">
+      <div
+        className={`relative mx-auto w-full ${isMobile ? "h-[520px]" : "h-[400px] md:h-[420px]"}`}
+      >
+        {items.map((project, index) => (
+          <CarouselCard
+            key={project.title}
+            project={project}
+            position={getCarouselPosition(index, activeIndex, items.length)}
+            isMobile={isMobile}
+            previewLabel={previewLabel}
+            githubLabel={githubLabel}
+            demoLabel={demoLabel}
+            isEasterEggActive={isEasterEggActive}
+            carouselTransition={carouselTransition}
+          />
+        ))}
+      </div>
+
+      <div className="relative z-40 mt-6 flex items-center justify-center gap-4">
+        <button
+          type="button"
+          onClick={goPrev}
+          aria-label={prevLabel}
+          className="rounded-full border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10 active:scale-95"
+        >
+          <ChevronLeft className="h-5 w-5 text-gray-300" aria-hidden />
+        </button>
+        <div className="flex gap-2" role="tablist" aria-label={previewLabel}>
+          {items.map((project, index) => (
+            <button
+              key={project.title}
+              type="button"
+              role="tab"
+              aria-selected={index === activeIndex}
+              onClick={() => setActiveIndex(index)}
+              className={`h-2 rounded-full transition-all ${
+                index === activeIndex
+                  ? "w-6 bg-cyan-400"
+                  : "w-2 bg-white/20 hover:bg-white/40"
+              }`}
+            />
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={goNext}
+          aria-label={nextLabel}
+          className="rounded-full border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10 active:scale-95"
+        >
+          <ChevronRight className="h-5 w-5 text-gray-300" aria-hidden />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function PortfolioSection() {
+  const { portfolio } = content;
+  const { isEasterEggActive, animationMultiplier } = useEasterEgg();
+  const { motionTransition } = usePerformanceController();
 
   return (
     <section
@@ -304,39 +318,17 @@ export default function PortfolioSection() {
         </p>
       </SectionParallax>
 
-      <div className="space-y-8 md:hidden">
-        {portfolio.items.map((project) => (
-          <MobileProjectCard
-            key={project.title}
-            project={project}
-            previewLabel={portfolio.previewLabel}
-            githubLabel={portfolio.githubLabel}
-            demoLabel={portfolio.demoLabel}
-            isEasterEggActive={isEasterEggActive}
-          />
-        ))}
-      </div>
-
-      <div
-        className="relative mx-auto hidden h-[500px] max-w-5xl overflow-visible md:block"
-        onMouseEnter={() => enable3D && setIsHoveredContainer(true)}
-        onMouseLeave={() => setIsHoveredContainer(false)}
-      >
-        {portfolio.items.map((project, index) => (
-          <DesktopFanCard
-            key={project.title}
-            project={project}
-            index={index}
-            isHoveredContainer={enable3D && isHoveredContainer}
-            previewLabel={portfolio.previewLabel}
-            githubLabel={portfolio.githubLabel}
-            demoLabel={portfolio.demoLabel}
-            isEasterEggActive={isEasterEggActive}
-            animationMultiplier={animationMultiplier}
-            motionTransition={motionTransition}
-          />
-        ))}
-      </div>
+      <PortfolioCarousel
+        items={portfolio.items}
+        previewLabel={portfolio.previewLabel}
+        prevLabel={portfolio.prevLabel}
+        nextLabel={portfolio.nextLabel}
+        githubLabel={portfolio.githubLabel}
+        demoLabel={portfolio.demoLabel}
+        isEasterEggActive={isEasterEggActive}
+        animationMultiplier={animationMultiplier}
+        motionTransition={motionTransition}
+      />
     </section>
   );
 }
