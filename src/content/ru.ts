@@ -1,5 +1,27 @@
 export type ServiceIcon = "bot" | "terminal" | "layout-dashboard";
 
+export type WikiSlug = "telegram-bots" | "parsers" | "crm";
+
+export type WikiArchitectureStep = {
+  step: string;
+  title: string;
+  text: string;
+};
+
+export type WikiFaqItem = {
+  q: string;
+  a: string;
+};
+
+export type WikiPage = {
+  title: string;
+  category: string;
+  description: string;
+  architecture: readonly WikiArchitectureStep[];
+  stack: readonly string[];
+  faq: readonly WikiFaqItem[];
+};
+
 export type ServiceItem = {
   icon: ServiceIcon;
   badge: string;
@@ -9,6 +31,7 @@ export type ServiceItem = {
   glowColor: string;
   beamColorFrom: string;
   beamColorTo: string;
+  wikiSlug: WikiSlug;
 };
 
 export type WorkflowIcon = "searchCode" | "cpu" | "shieldCheck";
@@ -51,6 +74,113 @@ export type ArchitectureStackLayer = {
   nodes: readonly ArchitectureNode[];
 };
 
+export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
+  "telegram-bots": {
+    title: "Умные Telegram-боты",
+    category: "Автоматизация в Telegram",
+    description:
+      "Проектирование и разработка отказоустойчивых ботов с бизнес-логикой любой сложности. Полная автоматизация воронок продаж, интеграция ИИ (LLM) контекста и мгновенная обработка входящих запросов через асинхронную архитектуру.",
+    stack: ["Aiogram 3.x", "FastAPI", "PostgreSQL", "Redis (Очереди)", "Docker"],
+    architecture: [
+      {
+        step: "01",
+        title: "Прием событий через Webhooks",
+        text: "Отказ от Long Polling в пользу вебхуков на FastAPI. Бот моментально реагирует на сообщения, выдерживая тысячи RPS.",
+      },
+      {
+        step: "02",
+        title: "Очереди задач и Менеджер состояний",
+        text: 'Использование Redis для хранения FSM состояний пользователя и Celery/RabbitMQ для фоновых "тяжелых" задач (генерация отчетов, рассылки).',
+      },
+      {
+        step: "03",
+        title: "Изоляция и Деплой",
+        text: "Упаковка в Docker-контейнеры и автоматический деплой на сервер. Логирование через чат-блок для контроля ошибок в реальном времени.",
+      },
+    ],
+    faq: [
+      {
+        q: "Как бот справляется с высокой нагрузкой во время рассылок?",
+        a: "Все массовые запросы уходят в очередь Redis. Бот не блокирует основной поток выполнения и отправляет сообщения строго по лимитам Telegram API, исключая баны.",
+      },
+      {
+        q: "Можно ли интегрировать бота с CRM, которой уже пользуется компания?",
+        a: "Да, благодаря FastAPI мы пишем гибкие шлюзы для интеграции с любой CRM (Amo, Bitrix) или внутренними базами данных через REST API / Webhooks.",
+      },
+    ],
+  },
+  parsers: {
+    title: "Высокоскоростные парсеры",
+    category: "Парсинг & Big Data",
+    description:
+      "Разработка многопоточных скриптов для парсинга закрытых API, интернет-магазинов, маркетплейсов и криптобирж. Обход любых систем защиты от ботов (Cloudflare, капчи) и структурирование данных в промышленных масштабах.",
+    stack: ["Python", "Playwright", "Asyncio", "BeautifulSoup4", "Scrapy"],
+    architecture: [
+      {
+        step: "01",
+        title: "Имитация поведения человека",
+        text: "Использование Playwright в stealth-режиме, динамическая подмена фингерпринтов браузера, заголовков и WebGL контекста.",
+      },
+      {
+        step: "02",
+        title: "Ротация резидентных прокси",
+        text: "Подключение пула мобильных и резидентных прокси с автоматической сменой IP-адреса при каждой сессии или по таймеру.",
+      },
+      {
+        step: "03",
+        title: "Конвейер обработки данных (Pipeline)",
+        text: "Асинхронный стриминг данных напрямую в СУБД или JSON/CSV файлы без перегрузки оперативной памяти сервера.",
+      },
+    ],
+    faq: [
+      {
+        q: "Как скрипт обходит защиту Cloudflare или капчу?",
+        a: "Мы используем кастомные сборки браузеров на базе Playwright/Puppeteer со встроенными плагинами обхода капч и умными задержками между кликами, имитирующими реального пользователя.",
+      },
+      {
+        q: "Какая скорость сбора данных?",
+        a: "Благодаря архитектуре Asyncio скрипт может одновременно обрабатывать до нескольких сотен веб-страниц в секунду, упираясь только в пропускную способность прокси.",
+      },
+    ],
+  },
+  crm: {
+    title: "Кастомные CRM-системы",
+    category: "Бизнес-инфраструктура",
+    description:
+      "Разработка индивидуальных систем учета и управления предприятием без абонентской платы. Проектирование интерфейсов под конкретные боли бизнеса: учет материалов, графики мастеров, воронки сделок и сквозная аналитика.",
+    stack: ["Next.js 15", "Tailwind v4", "TypeScript", "PostgreSQL", "Prisma"],
+    architecture: [
+      {
+        step: "01",
+        title: "Реактивный интерфейс",
+        text: "Сборка SPA/SSR приложения на Next.js. Мгновенный отклик таблиц, интерактивных календарей и дашбордов без перезагрузки страниц.",
+      },
+      {
+        step: "02",
+        title: "Безопасность и Роли",
+        text: "Разграничение прав доступа (Админ, Мастер, Менеджер) на уровне базы данных PostgreSQL с шифрованием JWT-токенов сессий.",
+      },
+      {
+        step: "03",
+        title: "Интегрированная автоматизация",
+        text: "Связка CRM с Telegram-уведомлениями для сотрудников о новых заказах и автоматическая генерация счетов/актов в PDF.",
+      },
+    ],
+    faq: [
+      {
+        q: "В чём выгода кастомной CRM по сравнению с готовыми решениями?",
+        a: "Вы не платите ежемесячную подписку за каждого сотрудника. Система создается строго под ваши бизнес-процессы, в ней нет лишнего мусора, и её можно бесконечно масштабировать.",
+      },
+      {
+        q: "Где хранятся данные клиентов и насколько это безопасно?",
+        a: "Все данные хранятся на вашем личном выделенном сервере. Доступ к бэкапам и базам данных есть только у вас, что исключает утечки к конкурентам.",
+      },
+    ],
+  },
+};
+
+export const WIKI_SLUGS = Object.keys(WIKI_PAGES) as WikiSlug[];
+
 export const SERVICES_ITEMS: readonly ServiceItem[] = [
   {
     icon: "bot",
@@ -62,6 +192,7 @@ export const SERVICES_ITEMS: readonly ServiceItem[] = [
     glowColor: "rgba(6, 182, 212, 0.15)",
     beamColorFrom: "#22d3ee",
     beamColorTo: "#06b6d4",
+    wikiSlug: "telegram-bots",
   },
   {
     icon: "terminal",
@@ -73,6 +204,7 @@ export const SERVICES_ITEMS: readonly ServiceItem[] = [
     glowColor: "rgba(168, 85, 247, 0.15)",
     beamColorFrom: "#c084fc",
     beamColorTo: "#a855f7",
+    wikiSlug: "parsers",
   },
   {
     icon: "layout-dashboard",
@@ -84,6 +216,7 @@ export const SERVICES_ITEMS: readonly ServiceItem[] = [
     glowColor: "rgba(236, 72, 153, 0.15)",
     beamColorFrom: "#f472b6",
     beamColorTo: "#ec4899",
+    wikiSlug: "crm",
   },
 ] as const;
 
@@ -593,5 +726,22 @@ export const content = {
       { label: "Контакты", href: "#contact" },
       { label: "GitHub", href: "https://github.com" },
     ],
+  },
+  wiki: {
+    headerBrand: "AFANASYEV.DEV // WIKI",
+    backToHome: "← На главную",
+    otherSections: "Другие разделы",
+    architectureTitle: "Архитектура и этапы реализации",
+    architectureSubtitle: "Как разворачивается и работает решение под капотом",
+    faqTitle: "Часто задаваемые вопросы (FAQ)",
+    faqSubtitle: "Технические нюансы и ответы для заказчиков",
+    notFoundTitle: "Раздел WIKI не найден",
+    notFoundCta: "Вернуться на главную",
+    ctaTitle: "Нужно похожее решение для бизнеса?",
+    ctaSubtitle: "Обсудим ваш проект и соберем прототип за пару дней.",
+    ctaButton: "Запустить проект →",
+    contactHref: "/#contact",
+    pages: WIKI_PAGES,
+    slugs: WIKI_SLUGS,
   },
 } as const;

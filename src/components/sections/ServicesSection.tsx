@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight, Bot, LayoutDashboard, Terminal } from "lucide-react";
+import Link from "next/link";
 
 import { BorderBeam } from "@/components/magicui/border-beam";
 import { SectionParallax } from "@/components/ui/section-parallax";
@@ -155,10 +156,13 @@ export function ServicesSection() {
                   ))}
                 </div>
 
-                <div className="flex w-fit cursor-pointer items-center gap-2 text-xs font-semibold text-gray-400 transition-colors group-hover:text-white">
+                <Link
+                  href={`/wiki/${service.wikiSlug}`}
+                  className="flex w-fit cursor-pointer items-center gap-2 text-xs font-semibold text-gray-400 transition-colors group-hover:text-white"
+                >
                   <span>{services.ctaLabel}</span>
                   <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1" />
-                </div>
+                </Link>
               </div>
             </motion.div>
           );
