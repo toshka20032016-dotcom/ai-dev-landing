@@ -8,19 +8,44 @@ import { EasterEggProvider } from "@/context/EasterEggContext";
 import { content } from "@/content/ru";
 import "./globals.css";
 
+const siteUrl = new URL("https://blackcraftlab.vercel.app");
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin", "cyrillic"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
+  metadataBase: siteUrl,
   title: content.meta.title,
   description: content.meta.description,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: content.meta.title,
+    description: content.meta.description,
+    url: siteUrl,
+    siteName: "BLACKCRAFTLAB",
+    locale: "ru_RU",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: content.meta.title,
+    description: content.meta.description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({
