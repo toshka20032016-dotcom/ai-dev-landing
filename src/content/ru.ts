@@ -135,20 +135,28 @@ export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
     category: "Автоматизация в Telegram",
     description:
       "Инжиниринг цифровых продуктов в Telegram: отказоустойчивые боты с инкапсуляцией бизнес-логики, автоматизация воронок, LLM-контекст и асинхронная обработка запросов по архитектурному контракту.",
-    dataFlowGraph:
-      "User → Telegram API → FastAPI Gateway → Redis Queue → Workers → PostgreSQL",
+    dataFlowGraph: `[User Request] ➔ [Telegram API Edge]
+                      │ (Secure Webhook)
+                      ▼
+               [FastAPI Gateway]
+                      │ (Async Dispatch)
+                      ▼
+               [Redis Task Queue] ➔ [Active Workers]
+                                        │
+                                        ▼
+                               [PostgreSQL Master]`,
     edgeCases: [
       {
-        title: "Dead Letter Queue (DLQ)",
-        trigger: "Воркер не обработал сообщение после N попыток retry.",
+        title: "Телеграм упал / Сбой Вебхука",
+        trigger: "Telegram API возвращает 5xx или таймаут сессии.",
         resolution:
-          "Задача попадает в DLQ с полным контекстом ошибки. Оператор получает алерт в Telegram log-gateway и может переотправить задачу вручную без потери данных.",
+          "Включается аварийный буфер очередей. Запросы аккумулируются внутри Redis и плавно выстреливают обратно, когда Telegram оживает. Ни один лид не теряется.",
       },
       {
-        title: "Rate limiting и retry",
-        trigger: "Telegram API возвращает 429 Too Many Requests.",
+        title: "Спам-атака на бота (Flooding)",
+        trigger: "Пользователь или ботнет шлёт 50 сообщений в секунду.",
         resolution:
-          "Token bucket с экспоненциальным backoff замедляет отправку. Порядок сообщений в рамках одного чата сохраняется, рассылка не блокирует webhook-поток.",
+          "Срабатывает встроенный лимитер (Throttling Middleware) на базе Redis Token Bucket. Юзер получает мягкий варн, а его поток запросов замораживается на 60 секунд.",
       },
     ],
     apiSpecs: {
@@ -210,20 +218,28 @@ export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
     category: "Парсинг & Big Data",
     description:
       "Промышленный data-pipeline: многопоточный сбор из API, маркетплейсов и закрытых источников. Инкапсуляция парсинг-логики, обход anti-bot систем и структурирование данных в enterprise-масштабах.",
-    dataFlowGraph:
-      "Target Site → Playwright → Proxy Pool → Parser Workers → PostgreSQL/CSV",
+    dataFlowGraph: `[Target API/Web] ➔ [Stealth Playwright Cluster]
+                          │ (Dynamic Fingerprinting)
+                          ▼
+                   [Proxy Rotator] (Residential IP Pool)
+                          │
+                          ▼
+                   [Asyncio Pipeline] ➔ [Data Clean Engine]
+                                              │
+                                              ▼
+                                     [DB / S3 Storage]`,
     edgeCases: [
       {
-        title: "Ротация прокси при 403/423",
-        trigger: "Целевой сайт отвечает 403 Forbidden или 423 Locked.",
+        title: "Cloudflare JS Challenge (Капча)",
+        trigger: "Сайт-донор резко включает агрессивную защиту Edge-нод.",
         resolution:
-          "Воркер помечает прокси как burned, берёт следующий из пула и повторяет запрос с новым fingerprint. Статистика по IP ведётся в Redis для балансировки.",
+          "Поток перенаправляется на кастомный Playwright WebGL инжектор. Скрипт имитирует движение мыши, рендерит реальный холст и бесшумно проходит валидацию.",
       },
       {
-        title: "Exponential backoff",
-        trigger: "Временные сбои: 502, timeout, rate limit от донора.",
+        title: "Бан прокси-подсети",
+        trigger: "IP-адрес получает код ответа 403 / 429.",
         resolution:
-          "Интервал между повторами удваивается (1s → 2s → 4s → 8s) с jitter ±20%. После 5 неудач задача уходит в DLQ без блокировки всего конвейера.",
+          "Сессия мгновенно уничтожается, конвейер переключается на резервный бэкенд-пул резидентных прокси, а упавший IP отправляется на ротацию. Сбор данных не останавливается.",
       },
     ],
     apiSpecs: {
@@ -281,19 +297,28 @@ export const WIKI_PAGES: Record<WikiSlug, WikiPage> = {
     category: "Бизнес-инфраструктура",
     description:
       "Кастомные ERP/CRM без абонентской платы: интерфейсы под бизнес-процессы заказчика, учёт, воронки сделок и сквозная аналитика. Асинхронная доставка кода по согласованному архитектурному контракту.",
-    dataFlowGraph: "Browser → Next.js → API Routes → Prisma → PostgreSQL",
+    dataFlowGraph: `[Next.js Client] ➔ [Vercel Edge Network]
+                          │ (Secure JWT / SSR)
+                          ▼
+                   [Prisma ORM Layer]
+                          │
+                          ▼
+                  [PostgreSQL Pool] ➔ [Redis Cache Layer]
+                                              │
+                                              ▼
+                                     [Telegram Notify]`,
     edgeCases: [
       {
-        title: "Redis cache fallback",
-        trigger: "PostgreSQL недоступна, read-only запросы продолжают поступать.",
+        title: "Разрыв соединения при импорте данных",
+        trigger: "Менеджер загружает тяжёлый бэкап и теряет сеть.",
         resolution:
-          "Данные обслуживаются из Redis-кэша с TTL 5 минут. UI показывает баннер «данные могут быть устаревшими», write-операции ставятся в очередь до восстановления БД.",
+          "Все транзакции упакованы в атомарные сессии Prisma DB. База либо сохраняет всё без ошибок, либо полностью откатывает изменения до исходного состояния, исключая дубли.",
       },
       {
-        title: "JWT/session при сбое БД",
-        trigger: "PostgreSQL падает во время refresh сессии.",
+        title: "Одновременная запись (Race Condition)",
+        trigger: "Два мастера одновременно пытаются занять один и тот же слот времени.",
         resolution:
-          "Access token (15 min) в httpOnly cookie, refresh в Redis. При падении БД refresh отклоняется безопасно — пользователь перенаправляется на login, токены не компрометируются.",
+          "Применяется оптимистичная блокировка (Optimistic Locking) на уровне строк PostgreSQL. Система обрабатывает запросы строго по миллисекундам, выдавая ошибку только второму и предлагая обновить сетку.",
       },
     ],
     apiSpecs: {
