@@ -4,43 +4,25 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, Play, RefreshCw } from "lucide-react";
 
-import { TerminalAboutPhoto } from "@/components/ui/AuthorPhotoVariants";
 import { useInteraction } from "@/components/providers/interaction-provider";
 import { content } from "@/content/ru";
 import { useEasterEgg } from "@/context/EasterEggContext";
 import { GPU_LAYER } from "@/lib/performance";
-import { cn } from "@/lib/utils";
 
 type TerminalTab = keyof typeof content.hero.terminal.commands;
 
-const ALL_TABS = Object.keys(
+const TERMINAL_TABS = Object.keys(
   content.hero.terminal.commands,
 ) as TerminalTab[];
 
 const VAULT_MESSAGE = "[ACCESS GRANTED]: SECRET VAULT UNLOCKED";
 
-type HeroTerminalProps = {
-  enableAboutTab?: boolean;
-  defaultTab?: TerminalTab;
-};
-
-export function HeroTerminal({
-  enableAboutTab = false,
-  defaultTab,
-}: HeroTerminalProps) {
+export function HeroTerminal() {
   const { terminal } = content.hero;
   const interaction = useInteraction();
   const { isEasterEggActive } = useEasterEgg();
-  const terminalTabs = enableAboutTab
-    ? ALL_TABS
-    : ALL_TABS.filter((tab) => tab !== "about");
-  const initialTab =
-    defaultTab && terminalTabs.includes(defaultTab)
-      ? defaultTab
-      : terminalTabs[0];
-  const [activeTab, setActiveTab] = useState<TerminalTab>(initialTab);
-  const isAboutTab = activeTab === "about";
-  const lineCount = isAboutTab ? 0 : terminal.commands[activeTab].length;
+  const [activeTab, setActiveTab] = useState<TerminalTab>("bot");
+  const lineCount = terminal.commands[activeTab].length;
   const [visibleLines, setVisibleLines] = useState<number>(lineCount);
   const [isSimulating, setIsSimulating] = useState(false);
   const showVault = isEasterEggActive;
@@ -55,12 +37,6 @@ export function HeroTerminal({
     (tab: TerminalTab) => {
       clearTimeouts();
       setActiveTab(tab);
-      if (tab === "about") {
-        setIsSimulating(false);
-        setVisibleLines(0);
-        return;
-      }
-
       setIsSimulating(true);
       setVisibleLines(0);
 
@@ -100,13 +76,8 @@ export function HeroTerminal({
         </div>
       </div>
 
-      <div
-        className={cn(
-          "grid border-b border-white/5 bg-black/20 text-center text-[10px] font-bold tracking-widest text-gray-500",
-          terminalTabs.length === 4 ? "grid-cols-4" : "grid-cols-3",
-        )}
-      >
-        {terminalTabs.map((tab) => (
+      <div className="grid grid-cols-3 border-b border-white/5 bg-black/20 text-center text-[10px] font-bold tracking-widest text-gray-500">
+        {TERMINAL_TABS.map((tab) => (
           <button
             key={tab}
             type="button"
@@ -141,24 +112,7 @@ export function HeroTerminal({
             </motion.div>
           )}
 
-          {!showVault && isAboutTab && (
-            <motion.div
-              key="about-photo"
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center gap-3"
-            >
-              <TerminalAboutPhoto />
-              <p className="text-center text-[10px] text-gray-500">
-                {content.hero.authorPortrait.captionName} ·{" "}
-                {content.hero.authorPortrait.captionRole}
-              </p>
-            </motion.div>
-          )}
-
           {!showVault &&
-            !isAboutTab &&
             terminal.commands[activeTab].slice(0, visibleLines).map((line, idx) => {
               const isLast = idx === lineCount - 1;
               return (
@@ -181,7 +135,7 @@ export function HeroTerminal({
             })}
         </AnimatePresence>
 
-        {!showVault && !isAboutTab && visibleLines < lineCount && (
+        {!showVault && visibleLines < lineCount && (
           <div
             className={`flex animate-pulse items-center gap-1 ${
               isEasterEggActive ? "text-pink-400" : "text-cyan-400"
@@ -197,7 +151,7 @@ export function HeroTerminal({
         <button
           type="button"
           onClick={() => !isSimulating && triggerSimulation(activeTab)}
-          disabled={isSimulating || isAboutTab}
+          disabled={isSimulating}
           className={`flex cursor-pointer items-center gap-1 transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
             isEasterEggActive
               ? "text-pink-400 hover:text-pink-300"

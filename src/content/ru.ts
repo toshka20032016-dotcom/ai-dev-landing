@@ -822,8 +822,6 @@ export const content = {
       status: "AVAILABLE FOR TASKS",
       captionName: "AFANASYEV.DEV",
       captionRole: "AI PRODUCT ENGINEER",
-      devAvatarBadge: "[ DEV_AVATAR // ONLINE ]",
-      ownerStatus: "[ OWNER // ONLINE ]",
     },
     terminal: {
       title: "AI_CORE_GENERATOR.SH",
@@ -834,7 +832,6 @@ export const content = {
         bot: "TG BOT",
         parser: "PARSER",
         crm: "CRM SYSTEM",
-        about: "ABOUT_ME",
       },
       commands: {
         bot: [
@@ -858,45 +855,7 @@ export const content = {
           "📈 Интеграция графиков и лидогенерации...",
           "🚀 ГОТОВО: CRM запущена. Время генерации: 4.2 сек.",
         ],
-        about: [
-          "> cat ./profile/author.jpg --format=raw",
-          "> identity: AFANASYEV.DEV",
-          "> role: AI PRODUCT ENGINEER",
-          "> status: ONLINE — ready for tasks",
-        ],
       },
-    },
-  },
-  heroVariants: {
-    variant1: {
-      badge: "Терминальный Инжиниринг",
-      greeting: "Привет, я Антон",
-      titlePrefix: "Разработка",
-      titleGradient: "CRM · парсеры · лендинги",
-      intro: "> npm run deploy --target=production --edge=vercel",
-      primaryCta: "Открыть калькулятор",
-      stackBadge: {
-        label: "stack_info --verbose",
-        href: "https://github.com/toshka20032016-dotcom",
-      },
-    },
-    variant2: {
-      tags: ["#NextJS", "#TailwindCSS", "#TypeScript"],
-      headline: "Цифровые системы под ключ",
-      quote:
-        "Архитектура, которая выдерживает пиковые нагрузки и окупается со старта — без бюрократии и месяцев ожидания.",
-      features: [
-        { icon: "zap" as const, label: "Быстрый деплой" },
-        { icon: "layers" as const, label: "Модульный стек" },
-        { icon: "cpu" as const, label: "Edge-ready" },
-      ],
-      primaryCta: "Рассчитать проект",
-    },
-    variant3: {
-      overline: "AFANASYEV.DEV",
-      headline: "Production-ready код.",
-      subline: "Без лишнего шума.",
-      cta: "./open_calculator.sh",
     },
   },
   services: {

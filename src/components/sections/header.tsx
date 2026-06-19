@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { Cpu, Terminal } from "lucide-react";
 
 import { useEasterEgg } from "@/context/EasterEggContext";
-import { HeroVariantSwitcher } from "@/components/sections/HeroVariants";
 import { content } from "@/content/ru";
 import { GPU_LAYER } from "@/lib/performance";
 
@@ -28,31 +27,28 @@ export function Header() {
       className={`pointer-events-none fixed top-0 right-0 left-0 z-40 px-4 pt-4 ${GPU_LAYER}`}
     >
       <div className="pointer-events-auto mx-auto flex max-w-6xl items-center justify-between gap-4 rounded-2xl border border-white/5 bg-slate-950/40 p-3 shadow-[0_4px_30px_rgba(0,0,0,0.2)] backdrop-blur-md">
-        <div className="flex shrink-0 items-center gap-2 pl-2">
-          <button
-            type="button"
-            onClick={triggerClick}
-            className={`flex shrink-0 cursor-pointer items-center gap-2 transition-colors duration-500 select-none hover:opacity-80 ${
-              isEasterEggActive ? "text-pink-500 hover:text-pink-400" : "text-white"
+        <button
+          type="button"
+          onClick={triggerClick}
+          className={`flex shrink-0 cursor-pointer items-center gap-2 pl-2 transition-colors duration-500 select-none hover:opacity-80 ${
+            isEasterEggActive ? "text-pink-500 hover:text-pink-400" : "text-white"
+          }`}
+          aria-label={header.logo}
+        >
+          <Terminal
+            className={`h-4 w-4 transition-colors duration-500 ${
+              isEasterEggActive ? "text-pink-400" : "text-cyan-400"
             }`}
-            aria-label={header.logo}
-          >
-            <Terminal
-              className={`h-4 w-4 transition-colors duration-500 ${
-                isEasterEggActive ? "text-pink-400" : "text-cyan-400"
-              }`}
-            />
-            <span className="font-mono text-xs font-bold tracking-widest uppercase">
-              {header.logo}
-              {isEasterEggActive && (
-                <span className="ml-2 text-[10px] text-pink-400 animate-pulse">
-                  [OVERCLOCKED]
-                </span>
-              )}
-            </span>
-          </button>
-          <HeroVariantSwitcher />
-        </div>
+          />
+          <span className="font-mono text-xs font-bold tracking-widest uppercase">
+            {header.logo}
+            {isEasterEggActive && (
+              <span className="ml-2 text-[10px] text-pink-400 animate-pulse">
+                [OVERCLOCKED]
+              </span>
+            )}
+          </span>
+        </button>
 
         <nav
           aria-label="Основная навигация"

@@ -4,7 +4,6 @@ import { InteractionProvider } from "@/components/providers/interaction-provider
 import { MotionProvider } from "@/components/providers/motion-provider";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll";
 import { EasterEggProvider } from "@/context/EasterEggContext";
-import { HeroVariantProvider } from "@/context/HeroVariantContext";
 import { content } from "@/content/ru";
 import "./globals.css";
 
@@ -32,13 +31,11 @@ export default function RootLayout({
     <html lang="ru" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-[var(--background)] text-[var(--foreground)]">
         <EasterEggProvider>
-          <HeroVariantProvider>
-            <MotionProvider>
-              <SmoothScrollProvider>
-                <InteractionProvider>{children}</InteractionProvider>
-              </SmoothScrollProvider>
-            </MotionProvider>
-          </HeroVariantProvider>
+          <MotionProvider>
+            <SmoothScrollProvider>
+              <InteractionProvider>{children}</InteractionProvider>
+            </SmoothScrollProvider>
+          </MotionProvider>
         </EasterEggProvider>
       </body>
     </html>

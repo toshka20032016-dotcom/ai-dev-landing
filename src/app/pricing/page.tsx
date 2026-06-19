@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 
 import PremiumCanvas from "@/components/canvas/PremiumCanvas";
-import { HeroSection } from "@/components/sections/HeroVariants";
 import { Footer } from "@/components/sections/footer";
 import { Header } from "@/components/sections/header";
 import {
@@ -86,6 +85,45 @@ function AnimatedCounter({ value }: { value: number }) {
   }, [value, motionValue]);
 
   return <motion.span>{display}</motion.span>;
+}
+
+function PricingHero() {
+  const { hero } = content.pricingPage;
+
+  return (
+    <section className="relative px-4 pb-16 pt-8 text-center md:pb-20 md:pt-12">
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING, delay: 0.05 }}
+        className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/5 px-4 py-1.5 text-xs font-medium text-cyan-300 backdrop-blur-sm"
+      >
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan-400 opacity-60" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan-400" />
+        </span>
+        {hero.badge}
+      </motion.div>
+
+      <motion.h1
+        initial={{ opacity: 0, y: 28 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING, delay: 0.12 }}
+        className="mx-auto max-w-3xl text-4xl font-extrabold tracking-tight text-white md:text-6xl"
+      >
+        {hero.title}
+      </motion.h1>
+
+      <motion.p
+        initial={{ opacity: 0, y: 28 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ ...SPRING, delay: 0.2 }}
+        className="mx-auto mt-5 max-w-2xl text-base font-light leading-relaxed text-gray-400 md:text-lg"
+      >
+        {hero.subtitle}
+      </motion.p>
+    </section>
+  );
 }
 
 type ProjectTypeCardsProps = {
@@ -661,7 +699,7 @@ function PricingCalculator() {
   };
 
   return (
-    <section id="calculator" className="px-4 pb-8 scroll-mt-28">
+    <section className="px-4 pb-8">
       <div className="mx-auto max-w-6xl">
         <motion.h2
           initial={{ opacity: 0, y: 16 }}
@@ -738,7 +776,7 @@ export default function PricingPage() {
       <main className="relative min-h-screen overflow-x-hidden bg-[#030408] pt-20 text-white selection:bg-cyan-500/30">
         <PremiumCanvas />
         <div className="relative z-10">
-          <HeroSection pageContext="pricing" compact />
+          <PricingHero />
           <PricingCalculator />
           <div className="mx-auto h-px max-w-5xl bg-gradient-to-r from-transparent via-white/5 to-transparent" />
           <BenefitsGrid />
