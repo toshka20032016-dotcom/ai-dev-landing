@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   AnimatePresence,
@@ -57,6 +57,38 @@ const BENEFIT_ICONS: Record<PricingBenefitIcon, LucideIcon> = {
   rocket: Rocket,
 };
 
+const TELEGRAM_USERNAME = "Zavod_Worker";
+
+const TECH_STACKS: Record<PricingProjectTypeId, readonly string[]> = {
+  landing: ["Next.js", "Tailwind", "Vercel"],
+  parser: ["Python", "Playwright", "Asyncio"],
+  crm: ["Supabase", "PostgreSQL", "TypeScript", "Docker"],
+};
+
+const INFO_NOTICE =
+  "[INFO]: Ссылка сформирована. После перехода в Telegram просто отправьте готовый текст в чат.";
+
+function buildTelegramMessage(params: {
+  type: string;
+  options: string[];
+  volume: number;
+  price: number;
+  days: number;
+}): string {
+  const optionsText =
+    params.options.length > 0 ? params.options.join(", ") : "—";
+  return `Привет! Рассчитал проект на сайте.
+🛠️ Тип: ${params.type}
+📦 Опции: ${optionsText}
+📊 Объем/Сложность: ${params.volume.toFixed(2)}
+💰 Итоговая стоимость: ${params.price.toLocaleString("ru-RU")} ₽
+⏱️ Срок: ${params.days} дней.`;
+}
+
+function buildTelegramUrl(message: string): string {
+  return `https://t.me/${TELEGRAM_USERNAME}?text=${encodeURIComponent(message)}`;
+}
+
 function calcTotal(
   basePrice: number,
   pages: number,
@@ -73,16 +105,30 @@ function calcDays(baseDays: number, urgent: boolean): number {
   return urgent ? Math.max(1, Math.ceil(baseDays / 2)) : baseDays;
 }
 
-function AnimatedCounter({ value }: { value: number }) {
+function useAnimatedNumber(value: number) {
   const motionValue = useMotionValue(value);
   const spring = useSpring(motionValue, { stiffness: 120, damping: 24 });
-  const display = useTransform(spring, (v) =>
-    Math.round(v).toLocaleString("ru-RU"),
-  );
 
   useEffect(() => {
     motionValue.set(value);
   }, [value, motionValue]);
+
+  return spring;
+}
+
+function AnimatedNumber({
+  value,
+  format = "integer",
+}: {
+  value: number;
+  format?: "integer" | "decimal";
+}) {
+  const spring = useAnimatedNumber(value);
+  const display = useTransform(spring, (v) =>
+    format === "decimal"
+      ? v.toFixed(2)
+      : Math.round(v).toLocaleString("ru-RU"),
+  );
 
   return <motion.span>{display}</motion.span>;
 }
@@ -155,7 +201,7 @@ function ProjectTypeCards({ selected, onSelect }: ProjectTypeCardsProps) {
               className={cn(
                 "relative overflow-hidden rounded-2xl border p-4 text-left backdrop-blur-md transition-shadow",
                 isSelected
-                  ? "border-cyan-400/40 bg-gradient-to-br from-cyan-500/10 via-indigo-500/5 to-violet-500/10 shadow-[0_0_30px_rgba(6,182,212,0.15)]"
+                  ? "border-cyan-500/40 bg-slate-900/50 shadow-[0_0_30px_rgba(6,182,212,0.15)]"
                   : "border-white/10 bg-slate-950/40 hover:border-white/20 hover:shadow-[0_0_20px_rgba(99,102,241,0.08)]",
               )}
             >
@@ -236,7 +282,7 @@ function OptionCheckbox({
       className={cn(
         "flex cursor-pointer items-start gap-4 rounded-2xl border p-4 backdrop-blur-md transition-colors",
         checked
-          ? "border-indigo-400/30 bg-indigo-500/5 shadow-[0_0_20px_rgba(99,102,241,0.1)]"
+          ? "border-cyan-500/40 bg-slate-900/50 shadow-[0_0_20px_rgba(6,182,212,0.1)]"
           : "border-white/10 bg-slate-950/30 hover:border-white/15",
       )}
     >
@@ -295,102 +341,86 @@ type ComplexitySliderProps = {
 
 function ComplexitySlider({ value, min, max, onChange }: ComplexitySliderProps) {
   const { sliderLabel, sliderUnit, sliderHint } = content.pricingPage.calculator;
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-
   const percent = ((value - min) / (max - min)) * 100;
-
-  const updateFromPointer = useCallback(
-    (clientX: number) => {
-      const track = trackRef.current;
-      if (!track) return;
-      const rect = track.getBoundingClientRect();
-      const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-      const raw = min + ratio * (max - min);
-      onChange(Math.round(raw));
-    },
-    [min, max, onChange],
-  );
-
-  useEffect(() => {
-    if (!dragging) return;
-
-    const onMove = (e: PointerEvent) => updateFromPointer(e.clientX);
-    const onUp = () => setDragging(false);
-
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-    };
-  }, [dragging, updateFromPointer]);
 
   return (
     <div className="space-y-3">
+      <style>{`
+        .pricing-range {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 100%;
+          height: 8px;
+          border-radius: 9999px;
+          background: linear-gradient(
+            to right,
+            rgb(6 182 212) 0%,
+            rgb(99 102 241) ${percent}%,
+            rgba(255, 255, 255, 0.1) ${percent}%
+          );
+          outline: none;
+          cursor: pointer;
+        }
+        .pricing-range::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #22d3ee, #818cf8);
+          border: 2px solid white;
+          box-shadow: 0 0 14px rgba(6, 182, 212, 0.65);
+          cursor: grab;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .pricing-range::-webkit-slider-thumb:hover {
+          transform: scale(1.25);
+          box-shadow:
+            0 0 24px rgba(6, 182, 212, 0.95),
+            0 0 40px rgba(99, 102, 241, 0.45);
+        }
+        .pricing-range::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #22d3ee, #818cf8);
+          border: 2px solid white;
+          box-shadow: 0 0 14px rgba(6, 182, 212, 0.65);
+          cursor: grab;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .pricing-range::-moz-range-thumb:hover {
+          transform: scale(1.25);
+          box-shadow:
+            0 0 24px rgba(6, 182, 212, 0.95),
+            0 0 40px rgba(99, 102, 241, 0.45);
+        }
+        .pricing-range::-moz-range-track {
+          height: 8px;
+          border-radius: 9999px;
+          background: transparent;
+        }
+      `}</style>
+
       <div className="flex items-center justify-between">
         <p className="font-mono text-xs uppercase tracking-widest text-gray-500">
           {sliderLabel}
         </p>
         <span className="font-mono text-sm font-bold text-violet-300">
-          {value} {sliderUnit}
+          <AnimatedNumber value={value} format="decimal" /> {sliderUnit}
         </span>
       </div>
 
-      <div
-        ref={trackRef}
-        className="relative h-10 select-none"
-        onPointerEnter={() => setShowTooltip(true)}
-        onPointerLeave={() => !dragging && setShowTooltip(false)}
-      >
-        <div className="absolute top-1/2 h-2 w-full -translate-y-1/2 overflow-hidden rounded-full bg-white/10">
-          <motion.div
-            className="h-full rounded-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-violet-500"
-            animate={{ width: `${percent}%` }}
-            transition={SPRING_SOFT}
-          />
-        </div>
-
-        <motion.div
-          className="absolute top-1/2 h-5 w-5 -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full border-2 border-white bg-gradient-to-br from-cyan-400 to-violet-500 shadow-[0_0_16px_rgba(6,182,212,0.5)] active:cursor-grabbing"
-          style={{ left: `${percent}%` }}
-          whileHover={{ scale: 1.15 }}
-          whileTap={{ scale: 0.95 }}
-          transition={SPRING}
-          onPointerDown={(e) => {
-            e.preventDefault();
-            setDragging(true);
-            setShowTooltip(true);
-            updateFromPointer(e.clientX);
-          }}
-        />
-
-        <AnimatePresence>
-          {(showTooltip || dragging) && (
-            <motion.div
-              initial={{ opacity: 0, y: 6, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 6, scale: 0.9 }}
-              transition={SPRING}
-              className="pointer-events-none absolute -top-10 z-10 -translate-x-1/2 rounded-lg border border-white/10 bg-slate-900/95 px-2.5 py-1 font-mono text-[11px] text-cyan-300 shadow-lg backdrop-blur-md"
-              style={{ left: `${percent}%` }}
-            >
-              {value} {sliderUnit}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <input
-          type="range"
-          min={min}
-          max={max}
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-          aria-label={sliderLabel}
-        />
-      </div>
+      <input
+        type="range"
+        className="pricing-range w-full"
+        min={min}
+        max={max}
+        step={0.01}
+        value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))}
+        aria-label={sliderLabel}
+      />
 
       <p className="text-xs text-gray-500">{sliderHint}</p>
     </div>
@@ -446,18 +476,48 @@ type ResultCardProps = {
   days: number;
   urgent: boolean;
   selectedLabel: string;
+  projectTypeId: PricingProjectTypeId;
+  telegramUrl: string;
+  logLines: readonly [string, string, string];
 };
 
-function ResultCard({ total, days, urgent, selectedLabel }: ResultCardProps) {
+function MicroLogger({ lines }: { lines: readonly [string, string, string] }) {
+  return (
+    <div className="mt-4 rounded-xl border border-white/5 bg-black/40 p-3 font-mono text-[11px] leading-relaxed text-emerald-400/90">
+      {lines.map((line, i) => (
+        <motion.p
+          key={`${i}-${line}`}
+          initial={{ opacity: 0, x: -6 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ ...SPRING, delay: i * 0.05 }}
+          className="truncate"
+        >
+          <span className="text-cyan-500/70">$</span> {line}
+        </motion.p>
+      ))}
+    </div>
+  );
+}
+
+function ResultCard({
+  total,
+  days,
+  urgent,
+  selectedLabel,
+  projectTypeId,
+  telegramUrl,
+  logLines,
+}: ResultCardProps) {
   const {
     resultTitle,
     resultDaysLabel,
     resultDaysUnit,
     resultIncludes,
     resultCta,
-    resultCtaHref,
     currency,
   } = content.pricingPage.calculator;
+
+  const stack = TECH_STACKS[projectTypeId];
 
   return (
     <motion.div
@@ -472,6 +532,17 @@ function ResultCard({ total, days, urgent, selectedLabel }: ResultCardProps) {
       </p>
       <p className="mt-1 text-sm text-gray-400">{selectedLabel}</p>
 
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {stack.map((tag) => (
+          <span
+            key={tag}
+            className="rounded-md border border-cyan-500/20 bg-slate-900/60 px-2 py-0.5 font-mono text-[10px] text-cyan-200/80"
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+
       <div className="mt-4 flex items-baseline gap-1">
         <motion.span
           key={total}
@@ -480,7 +551,7 @@ function ResultCard({ total, days, urgent, selectedLabel }: ResultCardProps) {
           transition={SPRING}
           className="font-mono text-4xl font-extrabold tracking-tight text-white md:text-5xl"
         >
-          <AnimatedCounter value={total} />
+          <AnimatedNumber value={total} />
         </motion.span>
         <span className="font-mono text-xl text-gray-400">{currency}</span>
       </div>
@@ -489,10 +560,10 @@ function ResultCard({ total, days, urgent, selectedLabel }: ResultCardProps) {
         <div>
           <p className="text-xs text-gray-500">{resultDaysLabel}</p>
           <p className="font-mono text-lg font-bold text-violet-300">
-            <AnimatedCounter value={days} /> {resultDaysUnit}
+            <AnimatedNumber value={days} /> {resultDaysUnit}
             {urgent && (
               <span className="ml-2 text-[10px] font-normal text-amber-400">
-                ⚡ urgent
+                ⚡ срочно
               </span>
             )}
           </p>
@@ -504,14 +575,18 @@ function ResultCard({ total, days, urgent, selectedLabel }: ResultCardProps) {
         {resultIncludes}
       </p>
 
+      <p className="mt-5 rounded-lg border border-cyan-500/15 bg-slate-900/50 px-3 py-2 font-mono text-[11px] leading-relaxed text-cyan-300/90">
+        {INFO_NOTICE}
+      </p>
+
       <motion.a
-        href={resultCtaHref}
+        href={telegramUrl}
         target="_blank"
         rel="noopener noreferrer"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         transition={SPRING}
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-400/30 bg-gradient-to-r from-cyan-500/20 via-indigo-500/20 to-violet-500/20 px-4 py-3.5 font-mono text-sm font-semibold text-cyan-100 shadow-[0_0_24px_rgba(6,182,212,0.2)] transition-shadow hover:shadow-[0_0_32px_rgba(6,182,212,0.35)]"
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-cyan-400/30 bg-gradient-to-r from-cyan-500/20 via-indigo-500/20 to-violet-500/20 px-4 py-3.5 font-mono text-sm font-semibold text-cyan-100 shadow-[0_0_24px_rgba(6,182,212,0.2)] transition-shadow hover:shadow-[0_0_32px_rgba(6,182,212,0.35)]"
       >
         <motion.span
           animate={{ scale: [1, 1.08, 1] }}
@@ -521,6 +596,8 @@ function ResultCard({ total, days, urgent, selectedLabel }: ResultCardProps) {
         </motion.span>
         {resultCta}
       </motion.a>
+
+      <MicroLogger lines={logLines} />
     </motion.div>
   );
 }
@@ -694,6 +771,31 @@ function PricingCalculator() {
 
   const days = calcDays(selectedType.days, urgent);
 
+  const selectedOptionLabels = useMemo(
+    () => calc.options.filter((opt) => options[opt.id]).map((opt) => opt.label),
+    [calc.options, options],
+  );
+
+  const telegramUrl = useMemo(() => {
+    const message = buildTelegramMessage({
+      type: selectedType.label,
+      options: selectedOptionLabels,
+      volume: pages,
+      price: total,
+      days,
+    });
+    return buildTelegramUrl(message);
+  }, [selectedType.label, selectedOptionLabels, pages, total, days]);
+
+  const logLines = useMemo(
+    (): [string, string, string] => [
+      `init :: ${selectedType.label.toLowerCase()} · vol=${pages.toFixed(2)}`,
+      `mods :: ${selectedOptionLabels.length > 0 ? selectedOptionLabels.join(" + ") : "base only"}`,
+      `done :: ${total.toLocaleString("ru-RU")} ₽ · ${days}d${urgent ? " [rush]" : ""}`,
+    ],
+    [selectedType.label, pages, selectedOptionLabels, total, days, urgent],
+  );
+
   const handleOptionChange = (id: PricingOptionId, checked: boolean) => {
     setOptions((prev) => ({ ...prev, [id]: checked }));
   };
@@ -761,6 +863,9 @@ function PricingCalculator() {
               days={days}
               urgent={urgent}
               selectedLabel={selectedType.label}
+              projectTypeId={projectType}
+              telegramUrl={telegramUrl}
+              logLines={logLines}
             />
           </motion.div>
         </div>
