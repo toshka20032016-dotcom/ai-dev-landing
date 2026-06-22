@@ -15,6 +15,7 @@ type Particle = {
 };
 
 const COLORS = ["#8052ff", "#ffb829", "#15846e", "#ffffff"] as const;
+const MAX_PARTICLES = 200;
 
 // ponytail: deterministic LCG — same field on every mount, no SSR mismatch
 function seededRandom(seed: number) {
@@ -30,8 +31,9 @@ function buildParticles(width: number, height: number, count: number): Particle[
   const shapes: Shape[] = ["circle", "triangle", "diamond", "square"];
   const cx = width * 0.62;
   const cy = height * 0.45;
+  const capped = Math.min(count, MAX_PARTICLES);
 
-  return Array.from({ length: count }, () => {
+  return Array.from({ length: capped }, () => {
     const angle = rand() * Math.PI * 2;
     const radius = Math.pow(rand(), 0.55) * Math.min(width, height) * 0.38;
     return {
@@ -88,9 +90,14 @@ export function ParticleConstellation() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
     let frame = 0;
     let raf = 0;
     let particles: Particle[] = [];
+    let isVisible = !document.hidden;
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio, 2);
@@ -98,10 +105,26 @@ export function ParticleConstellation() {
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      particles = buildParticles(width, height, width < 640 ? 180 : 320);
+      const density = width < 640 ? 120 : MAX_PARTICLES;
+      particles = buildParticles(width, height, density);
+    };
+
+    const drawStatic = () => {
+      const { width, height } = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, width, height);
+      for (const p of particles) {
+        ctx.globalAlpha = 0.6;
+        ctx.fillStyle = p.color;
+        drawShape(ctx, p.shape, p.x, p.y, p.size);
+      }
     };
 
     const draw = () => {
+      if (!isVisible) {
+        raf = requestAnimationFrame(draw);
+        return;
+      }
+
       const { width, height } = canvas.getBoundingClientRect();
       ctx.clearRect(0, 0, width, height);
 
@@ -118,13 +141,24 @@ export function ParticleConstellation() {
       raf = requestAnimationFrame(draw);
     };
 
+    const onVisibility = () => {
+      isVisible = !document.hidden;
+    };
+
     resize();
-    draw();
+    if (reducedMotion) {
+      drawStatic();
+    } else {
+      draw();
+    }
+
     window.addEventListener("resize", resize);
+    document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
+      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 

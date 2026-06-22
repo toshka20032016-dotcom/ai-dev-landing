@@ -1048,6 +1048,20 @@ export const content = {
     subtitle:
       "Привет, я Антон. Проектирую отказоустойчивые Telegram-боты, парсеры и CRM — быстро, без бюрократии, с production-деплоем на Vercel.",
     cta: "Обсудить проект",
+    nav: {
+      links: [
+        { label: "Инжиниринг", href: "#services" },
+        { label: "Процесс", href: "#workflow" },
+        { label: "Стоимость", href: "#pricing" },
+        { label: "Портфолио", href: "#portfolio" },
+        { label: "FAQ", href: "#faq" },
+      ],
+      cta: "Обсудить проект",
+    },
+    footer: {
+      tagline: "Превью направления v2 · void particle",
+      backLink: "← Основной сайт",
+    },
   },
   pricingPage: {
     meta: {

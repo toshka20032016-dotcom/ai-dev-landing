@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { PreviewHero } from "@/components/preview/PreviewHero";
+import { PreviewLandingClient } from "@/components/preview/PreviewLandingClient";
 import { content } from "@/content/ru";
 
 export const metadata: Metadata = {
@@ -10,9 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function PreviewPage() {
-  return (
-    <main className="bg-black">
-      <PreviewHero />
-    </main>
-  );
+  return <PreviewLandingClient />;
 }
