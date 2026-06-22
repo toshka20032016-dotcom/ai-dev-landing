@@ -36,6 +36,8 @@ src/
 
 ## Cursor workflow
 
+Design work: see `.cursor/rules/design-mcp-workflow.mdc` (Refero, Iconify, Higgsfield, visual QA MCPs).
+
 1. Attach reference screenshot
 2. Ask Agent to implement section by section
 3. Use Playwright or Browser MCP for visual QA
