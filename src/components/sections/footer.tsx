@@ -1,4 +1,5 @@
 import { content } from "@/content/ru";
+import { EasterEggTrigger } from "@/components/EasterEggTrigger";
 import { SystemStatus } from "@/components/ui/SystemStatus";
 
 function isExternalLink(href: string) {
@@ -31,6 +32,7 @@ export function Footer() {
         </nav>
         </div>
       </div>
+      <EasterEggTrigger />
     </footer>
   );
 }

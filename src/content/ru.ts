@@ -1034,6 +1034,21 @@ export const content = {
       { label: "GitHub", href: "https://github.com" },
     ],
   },
+  preview: {
+    meta: {
+      title: "blackcraftlab — preview",
+      description:
+        "Концепт личного лендинга blackcraftlab в стиле particle void: чистый чёрный, фиолетовый акцент, созвездие геометрии.",
+    },
+    brand: "blackcraftlab",
+    backLink: "← Основной сайт",
+    eyebrow: "ПРЕВЬЮ НАПРАВЛЕНИЯ · V2",
+    title: "Архитектура",
+    titleLine2: "цифровых систем.",
+    subtitle:
+      "Привет, я Антон. Проектирую отказоустойчивые Telegram-боты, парсеры и CRM — быстро, без бюрократии, с production-деплоем на Vercel.",
+    cta: "Обсудить проект",
+  },
   pricingPage: {
     meta: {
       title: "Калькулятор стоимости — BLACKCRAFTLAB",
