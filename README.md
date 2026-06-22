@@ -41,6 +41,28 @@ src/
 3. Use Playwright or Browser MCP for visual QA
 4. Deploy via Vercel MCP
 
+## Higgsfield MCP (image & video generation)
+
+[Higgsfield](https://higgsfield.ai) provides an MCP server for AI image and video generation in Cursor.
+
+**Free tier:** ~15 credits/month (see [Higgsfield docs](https://higgsfield.ai) for current limits).
+
+### Connect in Cursor
+
+1. Copy `.cursor/mcp.json` from this repo, or add to your user MCP config (`~/.cursor/mcp.json` on macOS/Linux, `%USERPROFILE%\.cursor\mcp.json` on Windows):
+
+```json
+"higgsfield": {
+  "url": "https://mcp.higgsfield.ai/mcp"
+}
+```
+
+2. Open **Cursor Settings → MCP** and enable **higgsfield**.
+3. On first use, complete **OAuth** in the browser — no API keys required.
+4. **Restart Cursor** after editing `mcp.json` so the server loads.
+
+The `/preview` landing uses canvas particles and CSS 3D (void black + violet); Higgsfield is optional for future asset generation.
+
 ## Environment variables
 
 Visit notifications are sent to Telegram when env vars are set on Vercel:
