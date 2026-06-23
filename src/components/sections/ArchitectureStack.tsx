@@ -7,9 +7,15 @@ import { content, type StackKey } from "@/content/ru";
 import { useEasterEgg } from "@/context/EasterEggContext";
 import { usePerformanceController } from "@/hooks/usePerformanceController";
 import { scaleMotionTransition } from "@/lib/performance";
+import {
+  isPreviewVariant,
+  previewSection,
+  type SectionVariant,
+} from "@/lib/preview-variant";
 
-export default function ArchitectureStack() {
+export default function ArchitectureStack({ variant = "default" }: { variant?: SectionVariant }) {
   const { architectureStack } = content;
+  const isPreview = isPreviewVariant(variant);
   const { isEasterEggActive, animationMultiplier } = useEasterEgg();
   const { motionTransition } = usePerformanceController();
   const [activeTab, setActiveTab] = useState<StackKey>("frontend");
@@ -21,39 +27,57 @@ export default function ArchitectureStack() {
 
   return (
     <section className="relative z-10 mx-auto max-w-6xl overflow-hidden px-4 py-24">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] bg-[size:20px_20px]" />
+      {!isPreview && (
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#ffffff03_1px,transparent_1px)] bg-[size:20px_20px]" />
+      )}
 
-      <div className="relative transform-gpu rounded-3xl border border-white/5 bg-slate-950/20 p-6 shadow-[0_4px_30px_rgba(0,0,0,0.4)] backdrop-blur-md will-change-transform md:p-10">
+      <div
+        className={`relative transform-gpu rounded-[24px] border p-6 will-change-transform md:p-10 ${
+          isPreview
+            ? "border-white/10 bg-transparent"
+            : "border-white/5 bg-slate-950/20 shadow-[0_4px_30px_rgba(0,0,0,0.4)] backdrop-blur-md"
+        }`}
+      >
         <div className="mb-12 flex flex-col justify-between gap-6 border-b border-white/5 pb-8 lg:flex-row lg:items-center">
           <div className="space-y-1">
             <span
               className={`block font-mono text-[10px] tracking-widest uppercase ${
-                isEasterEggActive ? "text-pink-400" : "text-cyan-400"
+                isPreview
+                  ? "text-[#8052ff]"
+                  : isEasterEggActive
+                    ? "text-pink-400"
+                    : "text-cyan-400"
               }`}
             >
               {architectureStack.badge}
             </span>
-            <h3 className="text-2xl font-extrabold tracking-tight text-white md:text-3xl">
+            <h3 className={`tracking-tight text-white ${isPreview ? "text-2xl font-extralight md:text-3xl" : "text-2xl font-extrabold md:text-3xl"}`}>
               {architectureStack.title}
             </h3>
           </div>
 
-          <div className="flex gap-1 self-start rounded-xl border border-white/5 bg-black/40 p-1 lg:self-center">
+          <div className={`flex gap-1 self-start rounded-[24px] border p-1 lg:self-center ${isPreview ? "border-white/10 bg-transparent" : "border-white/5 bg-black/40"}`}>
             {architectureStack.tabs.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
-                className={`relative cursor-pointer rounded-lg px-4 py-2 font-mono text-[11px] font-bold tracking-wider uppercase transition-colors duration-300 select-none ${
+                className={`relative cursor-pointer rounded-[24px] px-4 py-2 font-mono text-[11px] font-bold tracking-wider uppercase transition-colors duration-300 select-none ${
                   activeTab === tab.key
-                    ? "text-white"
+                    ? isPreview
+                      ? "text-white"
+                      : "text-white"
                     : "text-gray-500 hover:text-gray-300"
                 }`}
               >
                 {activeTab === tab.key && (
                   <motion.div
                     layoutId="activeArchitectureTab"
-                    className="absolute inset-0 rounded-lg border border-white/5 bg-white/10 shadow-inner"
+                    className={`absolute inset-0 rounded-[24px] border shadow-inner ${
+                      isPreview
+                        ? "border-[#8052ff]/30 bg-[#8052ff]/10"
+                        : "border-white/5 bg-white/10"
+                    }`}
                     transition={springTransition}
                   />
                 )}
@@ -101,10 +125,14 @@ export default function ArchitectureStack() {
                 className="group relative flex flex-col"
               >
                 <div
-                  className={`glass-card rounded-2xl border border-white/10 bg-slate-900/40 p-5 shadow-md backdrop-blur-sm transition-colors duration-300 ${
-                    isEasterEggActive
-                      ? "hover:border-pink-500/20 hover:bg-slate-900/60"
-                      : "hover:border-cyan-500/20 hover:bg-slate-900/60"
+                  className={`rounded-2xl border p-5 transition-colors duration-300 ${
+                    isPreview
+                      ? previewSection.card.replace("md:p-8", "p-5")
+                      : `glass-card border-white/10 bg-slate-900/40 shadow-md backdrop-blur-sm ${
+                          isEasterEggActive
+                            ? "hover:border-pink-500/20 hover:bg-slate-900/60"
+                            : "hover:border-cyan-500/20 hover:bg-slate-900/60"
+                        }`
                   }`}
                 >
                   <div className="mb-3 flex items-center justify-between">
@@ -112,17 +140,23 @@ export default function ArchitectureStack() {
                       {node.name}
                     </span>
                     <span
-                      className={`h-1.5 w-1.5 rounded-full group-hover:animate-pulse ${
-                        isEasterEggActive
-                          ? "bg-pink-400 shadow-[0_0_8px_rgba(236,72,153,0.6)]"
-                          : "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)]"
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        isPreview
+                          ? "bg-[#8052ff]"
+                          : isEasterEggActive
+                            ? "bg-pink-400 shadow-[0_0_8px_rgba(236,72,153,0.6)] group-hover:animate-pulse"
+                            : "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.6)] group-hover:animate-pulse"
                       }`}
                     />
                   </div>
 
                   <div
-                    className={`mb-2 font-mono text-base font-bold tracking-tight text-white transition-colors ${
-                      isEasterEggActive ? "group-hover:text-pink-400" : "group-hover:text-cyan-400"
+                    className={`mb-2 font-mono text-base tracking-tight text-white transition-colors ${
+                      isPreview
+                        ? "font-light group-hover:text-[#8052ff]"
+                        : isEasterEggActive
+                          ? "font-bold group-hover:text-pink-400"
+                          : "font-bold group-hover:text-cyan-400"
                     }`}
                   >
                     {node.tech}

@@ -1048,6 +1048,12 @@ export const content = {
     subtitle:
       "Привет, я Антон. Проектирую отказоустойчивые Telegram-боты, парсеры и CRM — быстро, без бюрократии, с production-деплоем на Vercel.",
     cta: "Обсудить проект",
+    secondaryCta: "Смотреть услуги",
+    heroStats: [
+      { value: "48ч", label: "Средний MVP" },
+      { value: "3+", label: "Production" },
+      { value: "100%", label: "OSS стек" },
+    ],
     nav: {
       links: [
         { label: "Инжиниринг", href: "#services" },

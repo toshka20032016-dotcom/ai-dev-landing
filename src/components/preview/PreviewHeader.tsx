@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Hexagon } from "lucide-react";
 
 import { content } from "@/content/ru";
 
@@ -17,23 +18,28 @@ export function PreviewHeader() {
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="pointer-events-none fixed top-0 right-0 left-0 z-40 px-4 pt-4"
+      className="pointer-events-none fixed top-0 right-0 left-0 z-40"
     >
-      <div className="pointer-events-auto mx-auto flex max-w-[1200px] items-center justify-between gap-4 rounded-3xl border border-white/10 px-4 py-3">
+      <div className="pointer-events-auto mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-6 py-6 md:px-[60px]">
         <Link
           href="/preview"
-          className="text-sm font-semibold tracking-[0.021em] text-white"
+          className="flex items-center gap-2 text-[18px] font-semibold tracking-[0.021em] text-white"
         >
+          <Hexagon
+            className="h-5 w-5 text-[#8052ff]"
+            strokeWidth={1.5}
+            aria-hidden
+          />
           {preview.brand}
         </Link>
 
         <nav
           aria-label="Навигация превью"
-          className="hidden items-center gap-1 lg:flex"
+          className="hidden items-center gap-8 lg:flex"
         >
           {preview.nav.links.map((link) => {
             const className =
-              "rounded-3xl px-3 py-1.5 text-sm tracking-[0.021em] text-[#9a9a9a] transition-colors hover:text-white";
+              "text-[14px] tracking-[0.021em] text-[#9a9a9a] transition-colors hover:text-white";
 
             if (isExternal(link.href)) {
               return (
@@ -57,17 +63,14 @@ export function PreviewHeader() {
           })}
         </nav>
 
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-4 md:gap-8">
           <Link
             href="/"
-            className="hidden text-sm tracking-[0.021em] text-[#9a9a9a] transition-colors hover:text-white sm:inline"
+            className="hidden text-[14px] tracking-[0.021em] text-[#9a9a9a] transition-colors hover:text-white sm:inline"
           >
             {preview.backLink}
           </Link>
-          <Link
-            href="#contact"
-            className="rounded-3xl bg-[#8052ff] px-4 py-2.5 text-xs font-semibold tracking-[0.05em] text-white uppercase transition-opacity hover:opacity-90"
-          >
+          <Link href="#contact" className="preview-cta">
             {preview.nav.cta}
           </Link>
         </div>

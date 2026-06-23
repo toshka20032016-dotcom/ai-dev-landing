@@ -47,7 +47,7 @@ export function PreviewLandingClient() {
   return (
     <div
       data-theme="preview"
-      className="preview-root relative min-h-screen overflow-x-hidden bg-black text-white selection:bg-[#8052ff]/30"
+      className="preview-root relative min-h-screen overflow-x-hidden bg-black text-white selection:bg-[#8052ff]/30 selection:text-white"
     >
       <div className="pointer-events-none fixed inset-0 z-0">
         <ParticleConstellation />
@@ -57,23 +57,23 @@ export function PreviewLandingClient() {
 
       <main className="relative z-10 w-full pt-20">
         <PreviewHero />
-        <TechTicker />
+        <TechTicker variant="preview" />
         <PreviewSectionGap />
-        <ServicesSection />
+        <ServicesSection variant="preview" />
         <PreviewSectionGap />
-        <WorkflowSection />
+        <WorkflowSection variant="preview" />
         <PreviewSectionGap />
-        <KpiSection />
+        <KpiSection variant="preview" />
         <PreviewSectionGap />
-        <ArchitectureStack />
+        <ArchitectureStack variant="preview" />
         <PreviewSectionGap />
-        <PortfolioSection />
+        <PortfolioSection variant="preview" />
         <PreviewSectionGap />
-        <PricingSection />
+        <PricingSection variant="preview" />
         <PreviewSectionGap />
-        <FaqSection />
+        <FaqSection variant="preview" />
         <PreviewSectionGap />
-        <ContactSection />
+        <ContactSection variant="preview" />
       </main>
 
       <PreviewFooter />

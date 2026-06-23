@@ -1,7 +1,4 @@
-"use client";
-
 import Link from "next/link";
-import { motion } from "framer-motion";
 
 import { content } from "@/content/ru";
 
@@ -9,45 +6,46 @@ const { preview } = content;
 
 export function PreviewHero() {
   return (
-    <section className="relative min-h-[85vh] overflow-hidden">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 [perspective:1200px]"
-      >
-        <motion.div
-          animate={{ rotateY: [8, -6, 8], rotateX: [-4, 5, -4] }}
-          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[18%] right-[8%] hidden h-32 w-32 rounded-3xl border border-white/10 md:block lg:h-40 lg:w-40"
-        />
-        <motion.div
-          animate={{ rotateY: [-10, 6, -10], rotateX: [5, -3, 5] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute top-[42%] right-[22%] hidden h-20 w-20 rounded-3xl border border-[#8052ff]/30 md:block"
-        />
-        <motion.div
-          animate={{ rotateZ: [0, 8, 0], y: [0, -12, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-[28%] right-[12%] hidden h-14 w-14 rounded-full border border-[#15846e]/40 md:block"
-        />
-      </div>
-
-      <div className="relative z-10 mx-auto grid max-w-[1200px] gap-12 px-6 pb-24 pt-16 md:grid-cols-2 md:items-center md:gap-8 md:pt-24">
-        <div className="max-w-[480px]">
-          <p className="preview-kicker mb-4">{preview.eyebrow}</p>
-          <h1 className="text-[clamp(2.75rem,8vw,5rem)] leading-[0.9] font-extralight tracking-[-0.04em]">
+    <section className="relative flex min-h-screen items-center overflow-hidden">
+      <div className="relative z-10 mx-auto w-full max-w-[1200px] px-6 md:px-[60px]">
+        <div className="max-w-[480px] pt-20 md:pt-0">
+          <p className="preview-kicker mb-3">{preview.eyebrow}</p>
+          <h1 className="text-[clamp(4.875rem,10vw,7.0625rem)] leading-[0.81] font-light tracking-[-0.04em] text-white">
             {preview.title}
             <br />
-            <span className="text-white/90">{preview.titleLine2}</span>
+            {preview.titleLine2}
           </h1>
-          <p className="mt-6 max-w-[36ch] text-[15px] leading-relaxed tracking-[0.025em] text-[#bdbdbd]">
+          <p className="mt-6 max-w-[36ch] text-[18px] leading-[1.5] tracking-[0.025em] text-white/90">
             {preview.subtitle}
           </p>
-          <Link href="#contact" className="preview-cta mt-10">
-            {preview.cta}
-          </Link>
-        </div>
 
-        <div className="relative hidden min-h-[420px] md:block" aria-hidden />
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            <Link href="#contact" className="preview-cta">
+              {preview.cta}
+            </Link>
+            <Link
+              href="#services"
+              className="preview-cta-ghost hidden sm:inline-flex"
+            >
+              {preview.secondaryCta}
+            </Link>
+          </div>
+
+          {preview.heroStats.length > 0 && (
+            <dl className="mt-14 grid grid-cols-3 gap-4 border-t border-white/10 pt-8">
+              {preview.heroStats.map((stat) => (
+                <div key={stat.label}>
+                  <dt className="text-[10px] tracking-[0.05em] text-[#9a9a9a] uppercase">
+                    {stat.label}
+                  </dt>
+                  <dd className="mt-1 text-2xl font-light tracking-[-0.02em] text-white">
+                    {stat.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
       </div>
     </section>
   );

@@ -9,6 +9,11 @@ import { SectionParallax } from "@/components/ui/section-parallax";
 import { useEasterEgg } from "@/context/EasterEggContext";
 import { usePerformanceController } from "@/hooks/usePerformanceController";
 import { GPU_LAYER, scaleMotionTransition, type PerformanceMotionTransition } from "@/lib/performance";
+import {
+  isPreviewVariant,
+  previewSection,
+  type SectionVariant,
+} from "@/lib/preview-variant";
 
 function GithubMark({ className }: { className?: string }) {
   return (
@@ -98,6 +103,7 @@ function CarouselCard({
   githubLabel,
   demoLabel,
   isEasterEggActive,
+  isPreview,
   carouselTransition,
 }: {
   project: PortfolioItem;
@@ -107,6 +113,7 @@ function CarouselCard({
   githubLabel: string;
   demoLabel: string;
   isEasterEggActive: boolean;
+  isPreview: boolean;
   carouselTransition: PerformanceMotionTransition;
 }) {
   const isActive = position === 0;
@@ -135,14 +142,14 @@ function CarouselCard({
       }`}
     >
       <article
-        className={`group glass-card rounded-3xl p-4 transition-shadow duration-300 sm:p-5 ${
-          isActive
-            ? "border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.08)]"
-            : "shadow-2xl"
-        } ${
-          isEasterEggActive && isActive
-            ? "shadow-[0_0_40px_rgba(236,72,153,0.15)]"
-            : ""
+        className={`group rounded-[24px] p-4 transition-shadow duration-300 sm:p-5 ${
+          isPreview
+            ? `preview-card ${isActive ? "border-[#8052ff]/25" : ""}`
+            : `glass-card ${isActive ? "border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.08)]" : "shadow-2xl"} ${
+                isEasterEggActive && isActive
+                  ? "shadow-[0_0_40px_rgba(236,72,153,0.15)]"
+                  : ""
+              }`
         }`}
       >
         <div className="flex flex-col gap-5 md:flex-row">
@@ -150,8 +157,10 @@ function CarouselCard({
           <div className="flex min-w-0 flex-1 flex-col justify-between">
             <div>
               <h3
-                className={`mb-2 text-lg font-bold text-white transition-colors md:text-xl ${
-                  isEasterEggActive ? "group-hover:text-pink-300" : "group-hover:text-cyan-300"
+                className={`mb-2 text-lg text-white transition-colors md:text-xl ${
+                  isPreview
+                    ? "font-light group-hover:text-[#8052ff]"
+                    : `font-bold ${isEasterEggActive ? "group-hover:text-pink-300" : "group-hover:text-cyan-300"}`
                 }`}
               >
                 {project.title}
@@ -191,6 +200,7 @@ function PortfolioCarousel({
   githubLabel,
   demoLabel,
   isEasterEggActive,
+  isPreview,
   animationMultiplier,
   motionTransition,
 }: {
@@ -201,6 +211,7 @@ function PortfolioCarousel({
   githubLabel: string;
   demoLabel: string;
   isEasterEggActive: boolean;
+  isPreview: boolean;
   animationMultiplier: number;
   motionTransition: PerformanceMotionTransition;
 }) {
@@ -244,6 +255,7 @@ function PortfolioCarousel({
             githubLabel={githubLabel}
             demoLabel={demoLabel}
             isEasterEggActive={isEasterEggActive}
+            isPreview={isPreview}
             carouselTransition={carouselTransition}
           />
         ))}
@@ -254,7 +266,11 @@ function PortfolioCarousel({
           type="button"
           onClick={goPrev}
           aria-label={prevLabel}
-          className="rounded-full border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10 active:scale-95"
+          className={`rounded-full border p-3 transition-all active:scale-95 ${
+            isPreview
+              ? "border-white/10 bg-transparent hover:border-[#8052ff]/30"
+              : "border-white/10 bg-white/5 hover:bg-white/10"
+          }`}
         >
           <ChevronLeft className="h-5 w-5 text-gray-300" aria-hidden />
         </button>
@@ -269,7 +285,9 @@ function PortfolioCarousel({
               onClick={() => setActiveIndex(index)}
               className={`h-2 rounded-full transition-all ${
                 index === activeIndex
-                  ? "w-6 bg-cyan-400"
+                  ? isPreview
+                    ? "w-6 bg-[#8052ff]"
+                    : "w-6 bg-cyan-400"
                   : "w-1.5 bg-white/20 hover:bg-white/40"
               }`}
             />
@@ -279,7 +297,11 @@ function PortfolioCarousel({
           type="button"
           onClick={goNext}
           aria-label={nextLabel}
-          className="rounded-full border border-white/10 bg-white/5 p-3 transition-all hover:bg-white/10 active:scale-95"
+          className={`rounded-full border p-3 transition-all active:scale-95 ${
+            isPreview
+              ? "border-white/10 bg-transparent hover:border-[#8052ff]/30"
+              : "border-white/10 bg-white/5 hover:bg-white/10"
+          }`}
         >
           <ChevronRight className="h-5 w-5 text-gray-300" aria-hidden />
         </button>
@@ -288,10 +310,11 @@ function PortfolioCarousel({
   );
 }
 
-export default function PortfolioSection() {
+export default function PortfolioSection({ variant = "default" }: { variant?: SectionVariant }) {
   const { portfolio } = content;
   const { isEasterEggActive, animationMultiplier } = useEasterEgg();
   const { motionTransition } = usePerformanceController();
+  const isPreview = isPreviewVariant(variant);
 
   return (
     <section
@@ -303,7 +326,9 @@ export default function PortfolioSection() {
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-pink-400 backdrop-blur-sm"
+          className={`mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium backdrop-blur-sm ${
+            isPreview ? previewSection.badge.replace("mb-4 ", "") : "text-pink-400"
+          }`}
         >
           {portfolio.badge}
         </motion.div>
@@ -312,14 +337,24 @@ export default function PortfolioSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="mb-4 text-3xl font-extrabold tracking-tight text-white md:text-5xl"
+          className={
+            isPreview
+              ? previewSection.title
+              : "mb-4 text-3xl font-extrabold tracking-tight text-white md:text-5xl"
+          }
         >
           {portfolio.title}{" "}
-          <span className="bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+          <span
+            className={
+              isPreview
+                ? previewSection.titleAccent
+                : "bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent"
+            }
+          >
             {portfolio.titleHighlight}
           </span>
         </motion.h2>
-        <p className="mx-auto max-w-2xl text-base font-light text-gray-400">
+        <p className={isPreview ? previewSection.subtitle : "mx-auto max-w-2xl text-base font-light text-gray-400"}>
           {portfolio.subtitle}
         </p>
       </SectionParallax>
@@ -332,6 +367,7 @@ export default function PortfolioSection() {
         githubLabel={portfolio.githubLabel}
         demoLabel={portfolio.demoLabel}
         isEasterEggActive={isEasterEggActive}
+        isPreview={isPreview}
         animationMultiplier={animationMultiplier}
         motionTransition={motionTransition}
       />
