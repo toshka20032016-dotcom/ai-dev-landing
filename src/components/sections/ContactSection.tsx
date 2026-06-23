@@ -15,11 +15,6 @@ import { content } from "@/content/ru";
 import BudgetTags from "@/components/ui/BudgetTags";
 import ContactInput from "@/components/ui/ContactInput";
 import { SectionParallax } from "@/components/ui/section-parallax";
-import {
-  isPreviewVariant,
-  previewSection,
-  type SectionVariant,
-} from "@/lib/preview-variant";
 
 type FormState = {
   name: string;
@@ -38,9 +33,6 @@ const initialFormState: FormState = {
 const inputClassName =
   "w-full border-b border-white/10 bg-transparent py-3 pr-4 pl-7 font-light text-white outline-none transition-all duration-300 placeholder:text-white/20 hover:border-white/25 focus:border-cyan-500/50 focus:shadow-[0_4px_20px_rgba(6,182,212,0.08)] disabled:opacity-50";
 
-const previewInputClassName =
-  "w-full border-b border-white/10 bg-transparent py-3 pr-4 pl-7 font-light text-white outline-none transition-all duration-300 placeholder:text-white/20 hover:border-white/25 focus:border-[#8052ff]/50 disabled:opacity-50";
-
 function buildMessage(message: string, tags: string[]) {
   if (tags.length === 0) return message;
 
@@ -48,10 +40,8 @@ function buildMessage(message: string, tags: string[]) {
   return message ? `${prefix}\n\n${message}` : prefix;
 }
 
-export default function ContactSection({ variant = "default" }: { variant?: SectionVariant }) {
+export default function ContactSection() {
   const { contact: copy } = content;
-  const isPreview = isPreviewVariant(variant);
-  const fieldClass = isPreview ? previewInputClassName : inputClassName;
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -105,16 +95,14 @@ export default function ContactSection({ variant = "default" }: { variant?: Sect
       id="contact"
       className="relative z-10 mx-auto max-w-3xl px-4 py-24"
     >
-      <div className={`pointer-events-none absolute top-1/2 left-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 select-none rounded-full blur-[120px] ${isPreview ? "bg-[#8052ff]/5" : "bg-purple-500/10"}`} />
+      <div className="pointer-events-none absolute top-1/2 left-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 select-none rounded-full bg-purple-500/10 blur-[120px]" />
 
       <SectionParallax className="mb-16 text-center">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className={`mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium backdrop-blur-sm ${
-            isPreview ? previewSection.badge.replace("mb-4 ", "") : "text-cyan-400"
-          }`}
+          className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-cyan-400 backdrop-blur-sm"
         >
           <span>{copy.badge}</span>
         </motion.div>
@@ -123,15 +111,11 @@ export default function ContactSection({ variant = "default" }: { variant?: Sect
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className={
-            isPreview
-              ? previewSection.title
-              : "mb-4 text-3xl font-extrabold tracking-tight text-white md:text-5xl"
-          }
+          className="mb-4 text-3xl font-extrabold tracking-tight text-white md:text-5xl"
         >
           {copy.title}
         </motion.h2>
-        <p className={`mx-auto max-w-md md:text-base ${isPreview ? "text-[15px] tracking-[0.025em] text-[#bdbdbd]" : "text-sm font-light text-gray-400"}`}>
+        <p className="mx-auto max-w-md text-sm font-light text-gray-400 md:text-base">
           {copy.subtitle}
         </p>
       </SectionParallax>
@@ -141,21 +125,13 @@ export default function ContactSection({ variant = "default" }: { variant?: Sect
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className={`relative overflow-hidden rounded-3xl border p-8 md:p-10 ${
-          isPreview
-            ? "preview-card border-white/10 bg-transparent"
-            : "glass-card border-white/5 bg-slate-950/30 backdrop-blur-lg"
-        }`}
+        className="glass-card relative overflow-hidden rounded-3xl border border-white/5 bg-slate-950/30 p-8 backdrop-blur-lg md:p-10"
       >
         <a
           href={copy.telegram.href}
           target="_blank"
           rel="noopener noreferrer"
-          className={`mb-8 flex min-h-[52px] w-full items-center justify-center gap-2.5 px-6 py-4 font-mono text-xs font-bold tracking-widest uppercase transition-all duration-300 active:scale-[0.99] ${
-            isPreview
-              ? "rounded-[24px] border border-[#8052ff]/30 text-[#8052ff] hover:border-[#8052ff]/50"
-              : "rounded-2xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 hover:border-cyan-400/50 hover:bg-cyan-500/20 hover:shadow-[0_0_25px_rgba(6,182,212,0.2)]"
-          }`}
+          className="mb-8 flex min-h-[52px] w-full items-center justify-center gap-2.5 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 px-6 py-4 font-mono text-xs font-bold tracking-widest text-cyan-300 uppercase transition-all duration-300 hover:border-cyan-400/50 hover:bg-cyan-500/20 hover:shadow-[0_0_25px_rgba(6,182,212,0.2)] active:scale-[0.99]"
         >
           <svg
             viewBox="0 0 24 24"
@@ -179,11 +155,11 @@ export default function ContactSection({ variant = "default" }: { variant?: Sect
           />
 
           <div className="group relative">
-            <label className={`mb-2 block font-mono text-xs tracking-widest uppercase transition-colors ${isPreview ? "text-[#9a9a9a] group-focus-within:text-[#8052ff]" : "text-gray-500 group-focus-within:text-cyan-400"}`}>
+            <label className="mb-2 block font-mono text-xs tracking-widest text-gray-500 uppercase transition-colors group-focus-within:text-cyan-400">
               {copy.fields.name.label}
             </label>
             <div className="relative">
-              <span className={`absolute top-3.5 left-0 transition-colors ${isPreview ? "text-gray-600 group-focus-within:text-[#8052ff]" : "text-gray-600 group-focus-within:text-cyan-400"}`}>
+              <span className="absolute top-3.5 left-0 text-gray-600 transition-colors group-focus-within:text-cyan-400">
                 <User className="h-4 w-4" />
               </span>
               <input
@@ -195,17 +171,17 @@ export default function ContactSection({ variant = "default" }: { variant?: Sect
                   setFormState((prev) => ({ ...prev, name: e.target.value }))
                 }
                 placeholder={copy.fields.name.placeholder}
-                className={fieldClass}
+                className={inputClassName}
               />
             </div>
           </div>
 
           <div className="group relative">
-            <label className={`mb-2 block font-mono text-xs tracking-widest uppercase transition-colors ${isPreview ? "text-[#9a9a9a] group-focus-within:text-[#8052ff]" : "text-gray-500 group-focus-within:text-cyan-400"}`}>
+            <label className="mb-2 block font-mono text-xs tracking-widest text-gray-500 uppercase transition-colors group-focus-within:text-cyan-400">
               {copy.fields.contact.label}
             </label>
             <div className="relative">
-              <span className={`absolute top-3.5 left-0 transition-colors ${isPreview ? "text-gray-600 group-focus-within:text-[#8052ff]" : "text-gray-600 group-focus-within:text-cyan-400"}`}>
+              <span className="absolute top-3.5 left-0 text-gray-600 transition-colors group-focus-within:text-cyan-400">
                 <SendHorizontal className="h-4 w-4" />
               </span>
               <ContactInput
@@ -219,17 +195,17 @@ export default function ContactSection({ variant = "default" }: { variant?: Sect
                   }))
                 }
                 placeholder={copy.fields.contact.placeholder}
-                className={fieldClass}
+                className={inputClassName}
               />
             </div>
           </div>
 
           <div className="group relative">
-            <label className={`mb-2 block font-mono text-xs tracking-widest uppercase transition-colors ${isPreview ? "text-[#9a9a9a] group-focus-within:text-[#8052ff]" : "text-gray-500 group-focus-within:text-cyan-400"}`}>
+            <label className="mb-2 block font-mono text-xs tracking-widest text-gray-500 uppercase transition-colors group-focus-within:text-cyan-400">
               {copy.fields.message.label}
             </label>
             <div className="relative">
-              <span className={`absolute top-3.5 left-0 transition-colors ${isPreview ? "text-gray-600 group-focus-within:text-[#8052ff]" : "text-gray-600 group-focus-within:text-cyan-400"}`}>
+              <span className="absolute top-3.5 left-0 text-gray-600 transition-colors group-focus-within:text-cyan-400">
                 <MessageSquare className="h-4 w-4" />
               </span>
               <textarea
@@ -243,7 +219,7 @@ export default function ContactSection({ variant = "default" }: { variant?: Sect
                   }))
                 }
                 placeholder={copy.fields.message.placeholder}
-                className={`${fieldClass} resize-none`}
+                className={`${inputClassName} resize-none`}
               />
             </div>
           </div>
@@ -258,16 +234,10 @@ export default function ContactSection({ variant = "default" }: { variant?: Sect
             }
             className={`flex min-h-[52px] w-full cursor-pointer items-center justify-center gap-2 px-6 py-4 font-mono text-xs font-bold tracking-widest uppercase transition-all duration-500 select-none disabled:cursor-not-allowed disabled:opacity-40 ${
               isSuccess
-                ? isPreview
-                  ? "rounded-[24px] border border-[#15846e]/50 text-[#15846e]"
-                  : "rounded-2xl bg-emerald-500 text-slate-950 shadow-[0_0_25px_rgba(16,185,129,0.4)]"
+                ? "rounded-2xl bg-emerald-500 text-slate-950 shadow-[0_0_25px_rgba(16,185,129,0.4)]"
                 : isSubmitting
-                  ? isPreview
-                    ? "cursor-not-allowed rounded-[24px] border border-white/10 text-[#9a9a9a]"
-                    : "cursor-not-allowed rounded-2xl bg-white/10 text-gray-400"
-                  : isPreview
-                    ? "rounded-[24px] bg-[#8052ff] text-white hover:opacity-90 active:scale-[0.99] disabled:hover:opacity-40"
-                    : "rounded-2xl bg-white text-slate-950 shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:bg-slate-200 active:scale-[0.99] disabled:hover:bg-white"
+                  ? "cursor-not-allowed rounded-2xl bg-white/10 text-gray-400"
+                  : "rounded-2xl bg-white text-slate-950 shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:bg-slate-200 active:scale-[0.99] disabled:hover:bg-white"
             }`}
           >
             <AnimatePresence mode="wait">

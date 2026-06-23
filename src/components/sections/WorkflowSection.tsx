@@ -5,11 +5,6 @@ import { Cpu, Plug, SearchCode, ShieldCheck } from "lucide-react";
 
 import { content, type WorkflowIcon } from "@/content/ru";
 import { usePerformanceController } from "@/hooks/usePerformanceController";
-import {
-  isPreviewVariant,
-  previewSection,
-  type SectionVariant,
-} from "@/lib/preview-variant";
 
 const icons: Record<WorkflowIcon, typeof SearchCode> = {
   searchCode: SearchCode,
@@ -34,82 +29,9 @@ const badgeStyles: Record<WorkflowIcon, string> = {
     "border-emerald-400/25 bg-emerald-400/10 text-emerald-300 shadow-[0_0_14px_rgba(52,211,153,0.35)]",
 };
 
-export function WorkflowSection({ variant = "default" }: { variant?: SectionVariant }) {
+export function WorkflowSection() {
   const { workflow } = content;
-  const isPreview = isPreviewVariant(variant);
   const { disableHeavyEffects, motionTransition } = usePerformanceController();
-
-  if (isPreview) {
-    return (
-      <section
-        id="workflow"
-        className="relative z-10 flex min-h-[70vh] items-center py-24"
-      >
-        <div className="mx-auto flex w-full max-w-[1200px] justify-end px-6 md:px-[60px]">
-          <div className="max-w-[480px]">
-            <p className={previewSection.badge.replace("inline-flex ", "")}>
-              {workflow.badge}
-            </p>
-            <h2 className={previewSection.title}>
-              {workflow.title}{" "}
-              <span className={previewSection.titleAccent}>
-                {workflow.titleHighlight}
-              </span>
-            </h2>
-            <p className={`${previewSection.subtitle.replace("mx-auto ", "")} mb-10`}>
-              {workflow.subtitle}
-            </p>
-
-            <ol className="relative space-y-6 border-l border-white/10 pl-8">
-              {workflow.steps.map((step, index) => {
-                const Icon = icons[step.icon];
-                return (
-                  <li key={step.num} className="relative">
-                    <span
-                      aria-hidden
-                      className="absolute -left-[33px] top-6 flex h-3 w-3 items-center justify-center rounded-full border border-[#8052ff]/50 bg-black"
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#8052ff]" />
-                    </span>
-                    <article className={previewSection.card}>
-                      <div className="mb-3 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                          <div className="rounded-[24px] border border-white/10 p-2">
-                            <Icon className="h-4 w-4 text-[#8052ff]" />
-                          </div>
-                          <span className="text-xs tracking-[0.021em] text-[#9a9a9a]">
-                            {step.phase}
-                          </span>
-                        </div>
-                        <span className="rounded-[24px] border border-[#8052ff]/25 px-2.5 py-1 text-[11px] font-semibold tracking-[0.05em] text-[#8052ff] uppercase">
-                          {step.badge}
-                        </span>
-                      </div>
-                      <p className="mb-1 text-[10px] tracking-[0.05em] text-[#9a9a9a] uppercase">
-                        Шаг {step.num}
-                      </p>
-                      <h3 className="mb-2 text-xl font-light text-white">
-                        {step.title}
-                      </h3>
-                      <p className="text-sm leading-relaxed tracking-[0.025em] text-[#bdbdbd]">
-                        {step.description}
-                      </p>
-                      {index < workflow.steps.length - 1 && (
-                        <div
-                          aria-hidden
-                          className="mt-6 h-px w-full bg-white/5"
-                        />
-                      )}
-                    </article>
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section

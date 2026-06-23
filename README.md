@@ -63,7 +63,7 @@ Design work: see `.cursor/rules/design-mcp-workflow.mdc` (Refero, Iconify, Higgs
 3. On first use, complete **OAuth** in the browser — no API keys required.
 4. **Restart Cursor** after editing `mcp.json` so the server loads.
 
-The `/preview` landing uses canvas particles and CSS 3D (void black + violet); Higgsfield is optional for future asset generation.
+Higgsfield is optional for future asset generation.
 
 ## Environment variables
 
