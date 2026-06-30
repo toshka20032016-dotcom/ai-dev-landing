@@ -9,6 +9,7 @@ const ASSETS = join(OUT_ROOT, "_assets");
 const { PROJECTS } = await import("./presentation-data.mjs");
 const { buildProcessSection, buildEliteCta, vitalBarsHtml, techTip } = await import("./case-study-sections.mjs");
 const { PROCESS_BY_SLUG, WEB_VITALS_BY_SLUG } = await import("./presentation-enrichment.mjs");
+const { cinematicFor } = await import("./cinematic-data.mjs");
 
 const esc = (s) =>
   String(s ?? "")
@@ -170,6 +171,11 @@ function phoneScrollFrame(img) {
 }
 
 /** @param {import('./presentation-data.mjs').Project} p @param {ReturnType<typeof categorizeMockups>} imgs */
+function buildCinematicButton(cinematic) {
+  if (!cinematic?.subtitles?.length) return "";
+  return `<button type="button" class="cinematic-btn reveal" data-cinematic-trigger aria-label="Посмотреть видео-презентацию"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>Посмотреть видео-презентацию</button>`;
+}
+
 function buildCaseStudy(p, imgs, mockups) {
   const live = Boolean(p.demoUrl && !p.demoUrl.includes("github.com"));
   const host = live ? new URL(p.demoUrl).hostname : p.repo + ".vercel.app";
@@ -180,6 +186,9 @@ function buildCaseStudy(p, imgs, mockups) {
   const processSection = buildProcessSection(p, imgs, esc);
   const eliteCta = buildEliteCta(p, live, esc);
   const parallaxItems = imgs.sections.length > 0 ? imgs.sections : imgs.gallery.filter((m) => /section|desktop|hero/i.test(m.name)).slice(0, 4);
+  const cinematic = cinematicFor(p);
+  const cinematicJson = cinematic ? esc(JSON.stringify(cinematic)) : "";
+  const cinematicBtn = buildCinematicButton(cinematic);
 
   const heroVisual = imgs.hero
     ? `<div class="hero-visual reveal tilt-card">${imgTag(imgs.hero)}</div>`
@@ -220,6 +229,7 @@ function buildCaseStudy(p, imgs, mockups) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../_assets/case-study.css"/>
+<link rel="stylesheet" href="../_assets/cinematic-showcase.css"/>
 <style>${cssVars(p)}:root{--font-display:"${esc(fontDisplay)}",system-ui,sans-serif;--font-body:"${esc(fontBody)}",system-ui,sans-serif}</style>
 </head>
 <body>
@@ -235,6 +245,7 @@ function buildCaseStudy(p, imgs, mockups) {
 <p class="lead reveal" style="margin-top:20px">${esc(p.tagline)}</p>
 <p class="lead reveal" style="margin-top:16px;font-size:1rem">${esc(p.overview.split(".")[0] + ".")}</p>
 <div class="hero-meta reveal stagger-parent">${p.techs.map((t, i) => `<span class="pill pill--accent stagger-item" style="--i:${i}" data-tooltip="${esc(techTip(p, t))}">${esc(t)}</span>`).join("")}<span class="pill stagger-item ${live ? "pill--live" : ""}" style="--i:${p.techs.length}">${live ? "● LIVE" : "○ CODE"}</span></div>
+${cinematicBtn}
 </div>
 ${heroVisual}
 </div>
@@ -298,7 +309,9 @@ ${buildUnderTheHood(p)}
 <button type="button" class="lightbox-close" aria-label="Закрыть">&times;</button>
 <img class="lightbox-img" alt=""/>
 </div>
+${cinematic ? `<script type="application/json" id="cinematic-config">${cinematicJson}</script>` : ""}
 <script src="../_assets/case-study.js" defer></script>
+<script src="../_assets/cinematic-showcase.js" defer></script>
 </body>
 </html>`;
 }
@@ -368,9 +381,13 @@ const caseCss = await readFile(join(ASSET_SRC, "case-study.css"), "utf8");
 await writeFile(join(ASSETS, "case-study.css"), caseCss, "utf8");
 const caseJs = await readFile(join(ASSET_SRC, "case-study.js"), "utf8");
 await writeFile(join(ASSETS, "case-study.js"), caseJs, "utf8");
+const cinematicCss = await readFile(join(ASSET_SRC, "cinematic-showcase.css"), "utf8");
+await writeFile(join(ASSETS, "cinematic-showcase.css"), cinematicCss, "utf8");
+const cinematicJs = await readFile(join(ASSET_SRC, "cinematic-showcase.js"), "utf8");
+await writeFile(join(ASSETS, "cinematic-showcase.js"), cinematicJs, "utf8");
 
 const indexItems = [];
-let fileCount = 2;
+let fileCount = 4;
 
 for (const project of PROJECTS) {
   const dir = join(OUT_ROOT, project.slug);
@@ -413,6 +430,7 @@ const manifest = {
     "code editor tabs + PageSpeed rings",
     "lightbox zoom",
     "phone scroll frame",
+    "cinematic showcase autoplay with subtitles and voice",
     "3D tilt cards",
     "fade up + scale + blur reveal",
     "gallery hover (siblings blur/opacity)",

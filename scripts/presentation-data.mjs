@@ -28,11 +28,14 @@
  * @property {{ html: string, css: string, js: string }} [codeSnippets]
  * @property {{ perf: number, a11y: number, seo: number }} [pageSpeedScores]
  * @property {string[]} [comparisonTooltips]
+ * @property {{ subtitles: Array<{at:number,text:string}>, waypoints: Array<object>, liveUrl?: string|null }} [cinematic]
  * @property {{ mockup?: string, live?: string }} [comparisonImages]
  */
 
 /** @type {Project[]} */
-export const PROJECTS = [
+import { cinematicFor as _cinematicFor } from "./cinematic-data.mjs";
+
+const _PROJECTS_RAW = [
   {
     "slug": "blackcraftlab",
     "title": "BLACKCRAFTLAB",
@@ -830,3 +833,6 @@ export const PROJECTS = [
     }
   }
 ];
+
+/** @type {Project[]} */
+export const PROJECTS = _PROJECTS_RAW.map((p) => ({ ...p, cinematic: _cinematicFor(p) }));
