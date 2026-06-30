@@ -7,6 +7,8 @@ const MOCKUPS_ROOT = "C:\\Users\\Alotyn\\Desktop\\мокапы";
 const OUT_ROOT = join(MOCKUPS_ROOT, "презентации");
 const ASSETS = join(OUT_ROOT, "_assets");
 const { PROJECTS } = await import("./presentation-data.mjs");
+const { buildProcessSection, buildEliteCta, vitalBarsHtml, techTip } = await import("./case-study-sections.mjs");
+const { PROCESS_BY_SLUG, WEB_VITALS_BY_SLUG } = await import("./presentation-enrichment.mjs");
 
 const esc = (s) =>
   String(s ?? "")
@@ -89,7 +91,7 @@ function defaultPalette(p) {
 function cssVars(p) {
   const a = p.accent ?? "#22d3ee";
   const b = p.accentSecondary ?? "#a78bfa";
-  return `:root{--bg:#050508;--surface:#0c0c14;--text:#f1f5f9;--muted:#94a3b8;--accent:${a};--accent2:${b};--border:rgba(148,163,184,.14);--glass:rgba(12,12,20,.72);--section-pad:clamp(48px,8vw,120px);--grid-gap:clamp(32px,4vw,64px);--font-display:"Unbounded",system-ui,sans-serif;--font-body:"Plus Jakarta Sans",system-ui,sans-serif}`;
+  return `:root{--bg:#050508;--surface:#0c0c14;--text:#f1f5f9;--muted:#94a3b8;--accent:${a};--accent2:${b};--border:rgba(148,163,184,.14);--glass:rgba(12,12,20,.72);--section-pad:clamp(80px,10vw,120px);--grid-gap:clamp(32px,4vw,64px);--font-display:"Inter",system-ui,sans-serif;--font-body:"Plus Jakarta Sans",system-ui,sans-serif}`;
 }
 
 
@@ -147,7 +149,7 @@ function buildUnderTheHood(p) {
   const panes = tabs.map((t, i) => `<pre class="code-pane${i === 0 ? " is-active" : ""}" data-pane="${t.id}"><code>${highlightCode(snippets[t.id] ?? "", t.id)}</code></pre>`).join("");
   const tabBtns = tabs.map((t, i) => `<button type="button" class="code-tab${i === 0 ? " is-active" : ""}" data-tab="${t.id}">${t.label}</button>`).join("");
   const ring = (label, score) => { const offset = 251.2 - (score / 100) * 251.2; return `<div class="ps-ring-wrap"><div class="ps-ring" data-score="${score}" style="--ps-offset:${offset}"><svg viewBox="0 0 88 88" aria-hidden="true"><circle class="ps-ring-bg" cx="44" cy="44" r="40"/><circle class="ps-ring-fill" cx="44" cy="44" r="40"/></svg><span class="ps-ring-val">0</span></div><span class="ps-ring-label">${label}</span></div>`; };
-  return `<section class="section" id="under-the-hood"><div class="section-inner"><div class="reveal"><p class="eyebrow">Under the Hood</p><h2 class="section-title">Код и PageSpeed</h2><p class="lead">Фрагменты production-кода и Lighthouse-метрики.</p></div><div class="hood-grid"><div class="code-window reveal tilt-card"><div class="code-chrome"><span class="code-dot code-dot--r"></span><span class="code-dot code-dot--y"></span><span class="code-dot code-dot--g"></span><div class="code-tabs">${tabBtns}</div></div><div class="code-body">${panes}</div></div><aside class="pagespeed-panel reveal"><p class="eyebrow" style="margin-bottom:8px">Lighthouse</p><div class="pagespeed-rings">${ring("Performance", scores.perf)}${ring("Accessibility", scores.a11y)}${ring("SEO", scores.seo)}</div></aside></div></div></section>`;
+  return `<section class="section" id="under-the-hood"><div class="section-inner"><div class="reveal"><p class="eyebrow">Engineering</p><h2 class="section-title">Техническое превосходство</h2><p class="lead">Фрагменты production-кода и Lighthouse-метрики.</p></div><div class="hood-grid"><div class="code-window reveal tilt-card"><div class="code-chrome"><span class="code-dot code-dot--r"></span><span class="code-dot code-dot--y"></span><span class="code-dot code-dot--g"></span><div class="code-tabs">${tabBtns}</div></div><div class="code-body">${panes}</div></div><aside class="pagespeed-panel reveal"><p class="eyebrow" style="margin-bottom:8px">Lighthouse</p><div class="pagespeed-rings">${ring("Performance", scores.perf)}${ring("Accessibility", scores.a11y)}${ring("SEO", scores.seo)}</div>${vitalBarsHtml(p, esc)}</aside></div></div></section>`;
 }
 
 /** @param {string} label */
@@ -172,9 +174,11 @@ function buildCaseStudy(p, imgs, mockups) {
   const live = Boolean(p.demoUrl && !p.demoUrl.includes("github.com"));
   const host = live ? new URL(p.demoUrl).hostname : p.repo + ".vercel.app";
   const palette = defaultPalette(p);
-  const fontDisplay = p.fontDisplay ?? "Unbounded";
+  const fontDisplay = p.fontDisplay ?? "Inter";
   const fontBody = p.fontBody ?? "Plus Jakarta Sans";
   const cmp = resolveComparison(mockups, imgs, p);
+  const processSection = buildProcessSection(p, imgs, esc);
+  const eliteCta = buildEliteCta(p, live, esc);
   const parallaxItems = imgs.sections.length > 0 ? imgs.sections : imgs.gallery.filter((m) => /section|desktop|hero/i.test(m.name)).slice(0, 4);
 
   const heroVisual = imgs.hero
@@ -214,7 +218,7 @@ function buildCaseStudy(p, imgs, mockups) {
 <title>${esc(p.title)} — Case Study</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@500;600;700&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../_assets/case-study.css"/>
 <style>${cssVars(p)}:root{--font-display:"${esc(fontDisplay)}",system-ui,sans-serif;--font-body:"${esc(fontBody)}",system-ui,sans-serif}</style>
 </head>
@@ -230,7 +234,7 @@ function buildCaseStudy(p, imgs, mockups) {
 <h1 class="display reveal">${esc(p.title)}</h1>
 <p class="lead reveal" style="margin-top:20px">${esc(p.tagline)}</p>
 <p class="lead reveal" style="margin-top:16px;font-size:1rem">${esc(p.overview.split(".")[0] + ".")}</p>
-<div class="hero-meta reveal stagger-parent">${p.techs.map((t, i) => `<span class="pill pill--accent stagger-item" style="--i:${i}">${esc(t)}</span>`).join("")}<span class="pill stagger-item ${live ? "pill--live" : ""}" style="--i:${p.techs.length}">${live ? "● LIVE" : "○ CODE"}</span></div>
+<div class="hero-meta reveal stagger-parent">${p.techs.map((t, i) => `<span class="pill pill--accent stagger-item" style="--i:${i}" data-tooltip="${esc(techTip(p, t))}">${esc(t)}</span>`).join("")}<span class="pill stagger-item ${live ? "pill--live" : ""}" style="--i:${p.techs.length}">${live ? "● LIVE" : "○ CODE"}</span></div>
 </div>
 ${heroVisual}
 </div>
@@ -248,6 +252,8 @@ ${heroVisual}
 </div>
 </div>
 </section>
+
+${processSection}
 
 ${buildComparisonSection(cmp, p.comparisonTooltips)}
 
@@ -307,16 +313,16 @@ function buildIndex(items) {
 <title>Портфолио — Case Studies</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Unbounded:wght@600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Inter:wght@600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{--bg:#050508;--text:#f1f5f9;--muted:#94a3b8;--cyan:#22d3ee;--border:rgba(148,163,184,.12)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .noise{position:fixed;inset:0;pointer-events:none;opacity:.3;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")}
 .mesh{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(34,211,238,.12),transparent),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(167,139,250,.08),transparent)}
-.wrap{position:relative;max-width:1400px;margin:0 auto;padding:clamp(48px,8vw,120px) clamp(20px,4vw,48px) 80px}
+.wrap{position:relative;max-width:1400px;margin:0 auto;padding:clamp(80px,10vw,120px) clamp(20px,4vw,48px) 80px}
 header{text-align:center;margin-bottom:clamp(48px,6vw,80px)}
-header h1{font-family:"Unbounded",system-ui,sans-serif;font-size:clamp(2.2rem,5vw,3.5rem);font-weight:700;letter-spacing:-.03em;background:linear-gradient(135deg,#fff,var(--cyan),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header h1{font-family:"Inter",system-ui,sans-serif;font-size:clamp(2.2rem,5vw,3.5rem);font-weight:700;letter-spacing:-.03em;background:linear-gradient(135deg,#fff,var(--cyan),#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 header p{color:var(--muted);margin-top:14px;font-size:1.05rem}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:clamp(20px,3vw,32px)}
 .card{display:grid;text-decoration:none;color:inherit;border-radius:24px;border:1px solid var(--border);background:rgba(12,12,20,.75);overflow:hidden;transition:transform .3s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .3s}
@@ -324,10 +330,10 @@ header p{color:var(--muted);margin-top:14px;font-size:1.05rem}
 .card-thumb{aspect-ratio:16/10;background:#0c0c14;overflow:hidden;position:relative}
 .card-thumb img{width:100%;height:100%;object-fit:cover;object-position:top;transition:transform .5s cubic-bezier(.22,1,.36,1)}
 .card:hover .card-thumb img{transform:scale(1.05)}
-.card-thumb--empty{display:flex;align-items:center;justify-content:center;font-family:"Unbounded",system-ui,sans-serif;font-size:2rem;font-weight:700;color:var(--card-accent,#22d3ee);opacity:.5}
+.card-thumb--empty{display:flex;align-items:center;justify-content:center;font-family:"Inter",system-ui,sans-serif;font-size:2rem;font-weight:700;color:var(--card-accent,#22d3ee);opacity:.5}
 .card-body{padding:24px 28px 28px;display:grid;gap:8px}
 .card-type{font-size:.65rem;letter-spacing:.18em;text-transform:uppercase;color:var(--card-accent,#22d3ee)}
-.card h2{font-family:"Unbounded",system-ui,sans-serif;font-size:1.2rem;font-weight:600;letter-spacing:-.02em}
+.card h2{font-family:"Inter",system-ui,sans-serif;font-size:1.2rem;font-weight:600;letter-spacing:-.02em}
 .card p{color:var(--muted);font-size:.9rem;line-height:1.5}
 .card-meta{display:flex;gap:14px;margin-top:6px;font-size:.72rem;color:var(--muted)}
 footer{text-align:center;margin-top:clamp(48px,6vw,72px);color:var(--muted);font-size:.85rem}
@@ -396,7 +402,7 @@ const manifest = {
   generatedAt: new Date().toISOString(),
   outputDir: OUT_ROOT,
   format: "scroll-case-study",
-  sectionOrder: ["hero","design-system","comparison","gallery","parallax","under-the-hood","problem-solution","metrics","cta"],
+  sectionOrder: ["hero","design-system","process","comparison","gallery","parallax","under-the-hood","problem-solution","metrics","elite-cta"],
   figmaFallback: "ponytail: no Figma PNG → live screenshot with CSS blur/desaturate as mockup layer",
   effects: [
     "gradient mesh background",
