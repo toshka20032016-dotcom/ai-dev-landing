@@ -21,6 +21,9 @@
  * @property {string[]} [mockupPatterns]
  * @property {string} accent — primary accent hex
  * @property {string} [accentSecondary]
+ * @property {{ name: string, hex: string }[]} [palette] — design system swatches
+ * @property {string} [fontDisplay] — display font family
+ * @property {string} [fontBody] — body font family
  * @property {string[]} [architecture] — workflow steps for architecture slide
  */
 
@@ -61,6 +64,14 @@ export const PROJECTS = [
     mockupPatterns: ["mockup-homepage-desktop.png", "mockup-pricing-desktop.png", "homepage-desktop.png", "pricing-desktop.png"],
     accent: "#22d3ee",
     accentSecondary: "#a78bfa",
+    palette: [
+      { name: "Void", hex: "#050508" },
+      { name: "Surface", hex: "#0c0c14" },
+      { name: "Cyan", hex: "#22d3ee" },
+      { name: "Violet", hex: "#a78bfa" },
+      { name: "Snow", hex: "#f1f5f9" },
+      { name: "Slate", hex: "#94a3b8" },
+    ],
     architecture: ["Brief & wireframe", "Next.js + Magic UI", "Visual QA Playwright", "Vercel Edge deploy"],
   },
   {
@@ -95,6 +106,14 @@ export const PROJECTS = [
     mockupDirs: ["portfolio-mockups", "ghost-garage-mockups"],
     accent: "#f97316",
     accentSecondary: "#fb923c",
+    palette: [
+      { name: "Void", hex: "#0a0806" },
+      { name: "Garage", hex: "#1a1410" },
+      { name: "Orange", hex: "#f97316" },
+      { name: "Amber", hex: "#fb923c" },
+      { name: "Steel", hex: "#e2e8f0" },
+      { name: "Smoke", hex: "#94a3b8" },
+    ],
     architecture: ["CRM schema", "Three.js configurator", "Post scheduler UI", "Vercel demo deploy"],
   },
   {
@@ -129,6 +148,14 @@ export const PROJECTS = [
     mockupDirs: ["portfolio-mockups", "ghost-arbitrage-mockups"],
     accent: "#10b981",
     accentSecondary: "#34d399",
+    palette: [
+      { name: "Void", hex: "#040a08" },
+      { name: "Panel", hex: "#0c1410" },
+      { name: "Emerald", hex: "#10b981" },
+      { name: "Mint", hex: "#34d399" },
+      { name: "Ghost", hex: "#ecfdf5" },
+      { name: "Muted", hex: "#6b7280" },
+    ],
     architecture: ["Price stream API", "Arbitrage engine", "Rate-limit guard", "Portfolio landing"],
   },
   {
@@ -163,6 +190,14 @@ export const PROJECTS = [
     mockupDirs: ["portfolio-mockups", "yandex-pet-day-mockups"],
     accent: "#facc15",
     accentSecondary: "#fde047",
+    palette: [
+      { name: "Void", hex: "#0a0a06" },
+      { name: "Stage", hex: "#14120a" },
+      { name: "Gold", hex: "#facc15" },
+      { name: "Lemon", hex: "#fde047" },
+      { name: "White", hex: "#fafafa" },
+      { name: "Gray", hex: "#a1a1aa" },
+    ],
     architecture: ["Event content model", "Speaker grid", "Lenis scroll", "Playwright QA"],
   },
   {
@@ -197,6 +232,14 @@ export const PROJECTS = [
     mockupDirs: ["portfolio-mockups", "bulochnaya-mockups"],
     accent: "#fbbf24",
     accentSecondary: "#fcd34d",
+    palette: [
+      { name: "Crust", hex: "#1a1208" },
+      { name: "Dough", hex: "#2a1f12" },
+      { name: "Honey", hex: "#fbbf24" },
+      { name: "Butter", hex: "#fcd34d" },
+      { name: "Cream", hex: "#fef3c7" },
+      { name: "Cocoa", hex: "#78716c" },
+    ],
     architecture: ["Brand story sections", "Product catalog", "Mobile-first layout", "Vercel static deploy"],
   },
   {
@@ -231,6 +274,14 @@ export const PROJECTS = [
     mockupDirs: ["portfolio-mockups", "villa-poseidon-mockups"],
     accent: "#38bdf8",
     accentSecondary: "#7dd3fc",
+    palette: [
+      { name: "Deep", hex: "#040a12" },
+      { name: "Ocean", hex: "#0c1a28" },
+      { name: "Sky", hex: "#38bdf8" },
+      { name: "Foam", hex: "#7dd3fc" },
+      { name: "Sand", hex: "#f1f5f9" },
+      { name: "Reef", hex: "#64748b" },
+    ],
     architecture: ["Full-bleed hero", "Scrollytelling sections", "Lifestyle imagery", "Edge CDN deploy"],
   },
   {
@@ -264,6 +315,14 @@ export const PROJECTS = [
     mockupDirs: ["portfolio-mockups", "usmanova-fit-mockups"],
     accent: "#ec4899",
     accentSecondary: "#f472b6",
+    palette: [
+      { name: "Void", hex: "#10060c" },
+      { name: "Studio", hex: "#1a0a14" },
+      { name: "Pink", hex: "#ec4899" },
+      { name: "Rose", hex: "#f472b6" },
+      { name: "Light", hex: "#fdf2f8" },
+      { name: "Ash", hex: "#9ca3af" },
+    ],
     architecture: ["Offer structure", "Program blocks", "Mobile CTA", "Vercel deploy"],
   },
   {
@@ -298,6 +357,14 @@ export const PROJECTS = [
     mockupDirs: ["portfolio-mockups"],
     accent: "#ef4444",
     accentSecondary: "#f87171",
+    palette: [
+      { name: "Void", hex: "#0a0606" },
+      { name: "Terminal", hex: "#140c0c" },
+      { name: "Red", hex: "#ef4444" },
+      { name: "Coral", hex: "#f87171" },
+      { name: "Code", hex: "#e2e8f0" },
+      { name: "Comment", hex: "#6b7280" },
+    ],
     architecture: ["PriceEmpire API", "Asyncio workers", "Playwright fallback", "Docker on VPS"],
   },
 ];
