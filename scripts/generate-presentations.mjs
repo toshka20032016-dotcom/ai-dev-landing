@@ -1,4 +1,4 @@
-import { mkdir, writeFile, readdir } from "node:fs/promises";
+import { mkdir, writeFile, readdir, readFile } from "node:fs/promises";
 import { join, relative, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -92,9 +92,63 @@ function cssVars(p) {
   return `:root{--bg:#050508;--surface:#0c0c14;--text:#f1f5f9;--muted:#94a3b8;--accent:${a};--accent2:${b};--border:rgba(148,163,184,.14);--glass:rgba(12,12,20,.72);--section-pad:clamp(48px,8vw,120px);--grid-gap:clamp(32px,4vw,64px);--font-display:"Unbounded",system-ui,sans-serif;--font-body:"Plus Jakarta Sans",system-ui,sans-serif}`;
 }
 
-const CASE_STUDY_CSS = `*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{font-family:var(--font-body);background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}img{display:block;max-width:100%;height:auto}a{color:inherit}.noise{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.35;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E")}.mesh{position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 70% 50% at 15% 0%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 55%),radial-gradient(ellipse 60% 45% at 85% 100%,color-mix(in srgb,var(--accent2) 14%,transparent),transparent 50%),var(--bg)}.page{position:relative;z-index:1}.section{padding:var(--section-pad) clamp(20px,4vw,48px)}.section-inner{max-width:1280px;margin:0 auto;display:grid;gap:var(--grid-gap)}.eyebrow{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600;margin-bottom:16px}.display{font-family:var(--font-display);font-size:clamp(2.5rem,6vw,5rem);font-weight:700;letter-spacing:-.04em;line-height:1.02;background:linear-gradient(135deg,#fff 15%,var(--accent) 50%,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.section-title{font-family:var(--font-display);font-size:clamp(1.75rem,3.5vw,2.75rem);font-weight:600;letter-spacing:-.03em;line-height:1.1;margin-bottom:8px}.lead{font-size:clamp(1rem,1.5vw,1.2rem);color:#cbd5e1;max-width:720px;line-height:1.75}.muted{color:var(--muted)}.reveal{opacity:0;transform:translateY(28px) scale(.97);filter:blur(8px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1),filter .7s cubic-bezier(.22,1,.36,1)}.reveal.is-visible{opacity:1;transform:none;filter:blur(0)}.hero{min-height:100svh;display:grid;align-items:center;padding-top:clamp(80px,12vh,140px);padding-bottom:var(--section-pad)}.hero-grid{display:grid;gap:var(--grid-gap);align-items:center}@media(min-width:900px){.hero-grid{grid-template-columns:1fr 1.1fr}}.hero-meta{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.pill{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;padding:8px 16px;border-radius:999px;border:1px solid var(--border);background:rgba(255,255,255,.03)}.pill--accent{border-color:color-mix(in srgb,var(--accent) 45%,transparent);color:var(--accent);box-shadow:0 0 24px color-mix(in srgb,var(--accent) 20%,transparent)}.pill--live{border-color:color-mix(in srgb,var(--accent2) 45%,transparent);color:var(--accent2)}.hero-visual{position:relative;border-radius:20px;overflow:hidden;border:1px solid var(--border);box-shadow:0 25px 50px -12px rgba(0,0,0,.5),0 0 80px color-mix(in srgb,var(--accent) 15%,transparent)}.hero-visual::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,transparent 40%,transparent 60%,rgba(255,255,255,.04) 100%);pointer-events:none}.hero-visual img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top}.ds-grid{display:grid;gap:var(--grid-gap)}@media(min-width:768px){.ds-grid{grid-template-columns:1fr 1fr}}.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:16px}.swatch{border-radius:16px;overflow:hidden;border:1px solid var(--border);background:var(--surface)}.swatch-color{aspect-ratio:1.2}.swatch-info{padding:12px 14px;font-size:.75rem}.swatch-info strong{display:block;font-size:.8rem;margin-bottom:2px}.type-demo{padding:32px;border-radius:20px;border:1px solid var(--border);background:var(--glass);backdrop-filter:blur(12px)}.type-display{font-family:var(--font-display);font-size:clamp(1.5rem,3vw,2.2rem);font-weight:600;margin-bottom:20px;letter-spacing:-.02em}.type-body{font-size:1rem;line-height:1.8;color:#cbd5e1}.type-body span{color:var(--accent)}.gallery-section .section-inner{gap:clamp(40px,5vw,72px)}.gallery-group{display:grid;gap:24px}.gallery-label{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}.gallery-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}.gallery-row--hover{position:relative}.gallery-card{border-radius:16px;overflow:hidden;border:1px solid var(--border);background:var(--surface);transition:transform .45s cubic-bezier(.22,1,.36,1),opacity .45s ease,filter .45s ease}.gallery-card img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;transition:transform .5s cubic-bezier(.22,1,.36,1)}.gallery-card figcaption{padding:12px 16px;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.gallery-row--hover:has(.gallery-card:hover) .gallery-card:not(:hover){opacity:.45;filter:blur(2px);transform:scale(.97)}.gallery-row--hover .gallery-card:hover{transform:scale(1.03);z-index:2;box-shadow:0 25px 50px -12px rgba(0,0,0,.5),0 0 40px color-mix(in srgb,var(--accent) 20%,transparent)}.gallery-row--hover .gallery-card:hover img{transform:scale(1.04)}.device-row{display:grid;gap:var(--grid-gap);justify-items:center}@media(min-width:900px){.device-row--dual{grid-template-columns:1.4fr .6fr;align-items:start}}.browser-frame{width:100%;max-width:960px;border-radius:16px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,.5),0 0 60px color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid var(--border);background:#111;position:relative}.browser-frame::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.1) 0%,transparent 35%);pointer-events:none;z-index:2}.browser-chrome{height:40px;background:linear-gradient(180deg,#2a2a2e,#1e1e22);display:flex;align-items:center;padding:0 14px;gap:7px;border-bottom:1px solid rgba(255,255,255,.06)}.dot{width:11px;height:11px;border-radius:50%}.dot-r{background:#ff5f57}.dot-y{background:#febc2e}.dot-g{background:#28c840}.url-bar{flex:1;margin-left:10px;height:24px;border-radius:6px;background:rgba(0,0,0,.35);font-size:10px;color:rgba(255,255,255,.35);display:flex;align-items:center;padding:0 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.browser-frame img,.phone-frame img{width:100%;object-fit:cover;object-position:top}.phone-frame{width:min(300px,80vw);border-radius:44px;padding:12px;background:linear-gradient(145deg,#3a3a3f,#0d0d10);box-shadow:0 25px 50px -12px rgba(0,0,0,.5),0 0 50px color-mix(in srgb,var(--accent) 15%,transparent);border:1px solid rgba(255,255,255,.1);position:relative}.phone-frame::after{content:"";position:absolute;inset:12px;border-radius:32px;background:linear-gradient(135deg,rgba(255,255,255,.08) 0%,transparent 40%);pointer-events:none;z-index:2}.phone-notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:96px;height:26px;background:#0d0d10;border-radius:0 0 16px 16px;z-index:3}.phone-screen{border-radius:32px;overflow:hidden;background:#000}.phone-bar{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:100px;height:4px;background:rgba(255,255,255,.35);border-radius:2px;z-index:3}.ps-grid{display:grid;gap:24px}@media(min-width:768px){.ps-grid{grid-template-columns:1fr 1fr}}.ps-card{padding:clamp(24px,4vw,40px);border-radius:20px;border:1px solid var(--border);background:var(--glass);backdrop-filter:blur(12px);line-height:1.75}.ps-card--problem{border-color:color-mix(in srgb,#f472b6 25%,transparent)}.ps-card--solution{border-color:color-mix(in srgb,var(--accent) 30%,transparent);box-shadow:0 0 40px color-mix(in srgb,var(--accent) 8%,transparent)}.ps-card h3{font-family:var(--font-display);font-size:1.1rem;margin-bottom:12px;color:var(--accent)}.ps-card--problem h3{color:#f472b6}.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px}.metric-card{padding:clamp(24px,3vw,36px);border-radius:20px;border:1px solid var(--border);background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 8%,transparent),color-mix(in srgb,var(--accent2) 5%,transparent));backdrop-filter:blur(10px)}.metric-value{font-family:var(--font-display);font-size:clamp(1.8rem,3vw,2.4rem);font-weight:700;color:var(--accent);text-shadow:0 0 30px color-mix(in srgb,var(--accent) 40%,transparent)}.metric-label{font-size:.9rem;font-weight:600;margin-top:6px}.metric-desc{font-size:.8rem;color:var(--muted);margin-top:8px;line-height:1.5}.cta-section{text-align:center;padding-bottom:clamp(80px,12vh,160px)}.cta-inner{display:grid;gap:32px;justify-items:center}.link-stack{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}.link-btn{display:inline-flex;align-items:center;padding:16px 32px;border-radius:14px;text-decoration:none;font-weight:600;font-size:.95rem;border:1px solid var(--border);transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}.link-btn:hover{transform:translateY(-3px);border-color:color-mix(in srgb,var(--accent) 50%,transparent)}.link-btn--primary{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 30%,transparent),color-mix(in srgb,var(--accent2) 20%,transparent));border-color:color-mix(in srgb,var(--accent) 45%,transparent);box-shadow:0 0 40px color-mix(in srgb,var(--accent) 20%,transparent)}.footer-note{font-size:.8rem;color:var(--muted)}.placeholder-visual{min-height:320px;border-radius:20px;border:1px dashed var(--border);display:flex;align-items:center;justify-content:center;text-align:center;padding:48px;color:var(--muted);background:var(--glass)}.placeholder-visual a{color:var(--accent)}.back-link{position:fixed;top:24px;left:24px;z-index:50;padding:10px 18px;border-radius:999px;font-size:.75rem;text-decoration:none;border:1px solid var(--border);background:rgba(8,8,12,.85);backdrop-filter:blur(10px);transition:border-color .2s,transform .2s}.back-link:hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent);transform:translateX(-2px)}@media(max-width:640px){.back-link{top:12px;left:12px;padding:8px 14px}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}.gallery-card,.gallery-card img,.link-btn{transition:none!important}.gallery-row--hover:has(.gallery-card:hover) .gallery-card:not(:hover){opacity:1!important;filter:none!important;transform:none!important}.lightbox-trigger{cursor:zoom-in}.lightbox{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:48px 24px;background:rgba(5,5,8,.92);backdrop-filter:blur(12px);opacity:0;transition:opacity .35s ease}.lightbox.is-active{opacity:1}.lightbox[hidden]{display:none!important}.lightbox-img{max-width:min(96vw,1600px);max-height:92vh;width:auto;height:auto;object-fit:contain;border-radius:12px;box-shadow:0 25px 80px rgba(0,0,0,.65)}.lightbox-close{position:absolute;top:24px;right:24px;z-index:201;width:44px;height:44px;border-radius:999px;border:1px solid var(--border);background:rgba(8,8,12,.85);color:var(--text);font-size:28px;line-height:1;cursor:pointer;transition:border-color .2s,transform .2s}.lightbox-close:hover{border-color:color-mix(in srgb,var(--accent) 45%,transparent);transform:scale(1.05)}body.lightbox-open{overflow:hidden}.phone-frame--device{width:min(300px,80vw)}.phone-screen--scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;height:calc(min(300px,80vw)*(844/390) - 52px);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.22) transparent}.phone-screen--scroll::-webkit-scrollbar{width:4px}.phone-screen--scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:4px}.phone-scroll-img{width:100%;height:auto;max-width:none;display:block;object-fit:unset;aspect-ratio:unset;object-position:top}.phone-screen--scroll .phone-scroll-img{object-fit:unset}}`;
 
-const CASE_STUDY_JS = `(function(){var reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;if(!reduced){document.querySelectorAll(".reveal").forEach(function(el){var io=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting){e.target.classList.add("is-visible");io.unobserve(e.target)}})},{threshold:.12,rootMargin:"0px 0px -40px 0px"});io.observe(el)})}else{document.querySelectorAll(".reveal").forEach(function(el){el.classList.add("is-visible")})}document.querySelectorAll(".gallery-row--hover").forEach(function(row){row.querySelectorAll(".gallery-card").forEach(function(card){card.addEventListener("mouseenter",function(){row.classList.add("is-hovering")});card.addEventListener("mouseleave",function(){row.classList.remove("is-hovering")})})});var lb=document.getElementById("screenshot-lightbox");if(lb){var lbImg=lb.querySelector(".lightbox-img");var lbClose=lb.querySelector(".lightbox-close");function openLb(src,alt){if(!src)return;lbImg.src=src;lbImg.alt=alt||"";lb.hidden=false;document.body.classList.add("lightbox-open");requestAnimationFrame(function(){lb.classList.add("is-active")})}function closeLb(){lb.classList.remove("is-active");document.body.classList.remove("lightbox-open");setTimeout(function(){lb.hidden=true;lbImg.removeAttribute("src")},280)}document.querySelectorAll(".lightbox-trigger").forEach(function(el){el.addEventListener("click",function(){openLb(el.currentSrc||el.src,el.alt)})});lb.addEventListener("click",function(e){if(e.target===lb)closeLb()});lbClose&&lbClose.addEventListener("click",closeLb);document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!lb.hidden)closeLb()})}})();`;
+/**
+ * ponytail: Figma fallback — when no *-mockup / mockup-homepage / composite exists,
+ * reuse live screenshot with CSS blur+desaturate as «Макет» layer.
+ */
+function resolveComparison(mockups, imgs, project) {
+  if (project.comparisonImages?.live && project.comparisonImages?.mockup) {
+    return { liveSrc: project.comparisonImages.live, mockupSrc: project.comparisonImages.mockup, mockupFallback: false };
+  }
+  const live = mockups.find((m) => /05-desktop-full/.test(m.name)) ?? mockups.find((m) => /^01-hero/.test(m.name)) ?? imgs.desktop ?? imgs.hero;
+  const mockup = mockups.find((m) => /mockup-homepage-desktop|homepage-desktop-mockup|desktop-mockup|composite/i.test(m.name) && !/pricing|mobile/i.test(m.name)) ?? mockups.find((m) => /mockup.*desktop/i.test(m.name) && !/pricing/i.test(m.name));
+  return { liveSrc: live?.src ?? "", mockupSrc: mockup?.src ?? live?.src ?? "", mockupFallback: !mockup };
+}
+
+function highlightCode(code, lang) {
+  return code.split("\n").map((line, i) => {
+    let h = esc(line);
+    if (lang === "html") {
+      h = h.replace(/([\w-]+)(=)(&quot;[^&]*&quot;)/g, '<span class="tok-attr">$1</span>$2<span class="tok-str">$3</span>');
+      h = h.replace(/(&lt;\/?)([\w-]+)/g, '$1<span class="tok-tag">$2</span>');
+    } else if (lang === "css") {
+      h = h.replace(/^(\s*)([.#:][\w-]+)/, '$1<span class="tok-tag">$2</span>');
+      h = h.replace(/(--[\w-]+)/g, '<span class="tok-var">$1</span>');
+      h = h.replace(/(#[0-9a-fA-F]{3,8})/g, '<span class="tok-num">$1</span>');
+    } else {
+      h = h.replace(/\b(import|from|const|let|async|await|function|return|new|class)\b/g, '<span class="tok-kw">$1</span>');
+      h = h.replace(/(&quot;[^&]*&quot;|'[^']*')/g, '<span class="tok-str">$1</span>');
+      h = h.replace(/(#.*)$/, '<span class="tok-cm">$1</span>');
+    }
+    return `<div class="code-line" style="--line:${i}">${h || "&nbsp;"}</div>`;
+  }).join("");
+}
+
+function buildComparisonSection(cmp, tooltips) {
+  if (!cmp.liveSrc) return "";
+  const mockupCls = cmp.mockupFallback ? " compare-mockup--fallback" : "";
+  const hints = (tooltips ?? []).map((t) => `<span class="compare-hint" data-tip="${esc(t)}">${esc(t)}</span>`).join("");
+  const fb = cmp.mockupFallback ? ' <span class="muted">(ponytail: нет Figma — дизайн-слой из live)</span>' : "";
+  return `<section class="section compare-section" id="comparison"><div class="section-inner"><div class="reveal"><p class="eyebrow">Pixel-perfect</p><h2 class="section-title">Макет и готовый сайт</h2><p class="lead">Сравните дизайн и production — перетащите ползунок.${fb}</p></div><div class="compare-labels reveal"><span><strong>Макет</strong> · дизайн</span><span><strong>Готовый сайт</strong> · production</span></div><figure class="compare-wrap reveal tilt-card" data-compare><div class="compare-layer compare-live"><img src="${esc(cmp.liveSrc)}" alt="Готовый сайт" width="1440" height="900" loading="lazy"/></div><div class="compare-layer compare-mockup${mockupCls}"><img src="${esc(cmp.mockupSrc)}" alt="Макет" width="1440" height="900" loading="lazy"/></div><div class="compare-handle" aria-hidden="true"></div><input type="range" class="compare-range" min="0" max="100" value="50" aria-label="Сравнение макета и сайта"/></figure>${hints ? `<div class="compare-hints reveal">${hints}</div>` : ""}</div></section>`;
+}
+
+function buildParallaxSection(parallaxItems) {
+  if (!parallaxItems.length) return "";
+  const speeds = [0.1, 0.2, 0.35, 0.25];
+  const cards = parallaxItems.slice(0, 4).map((m, i) => `<article class="parallax-card" data-speed="${speeds[i] ?? 0.2}"><img src="${esc(m.src)}" alt="${esc(figLabel(m.name))}" width="1440" height="900" loading="lazy"/></article>`).join("");
+  return `<section class="section parallax-section" id="parallax"><div class="section-inner"><div class="reveal"><p class="eyebrow">Глубина</p><h2 class="section-title">Каскад внутренних экранов</h2><p class="lead">Parallax-слои при скролле — разная скорость каждой карточки.</p></div><div class="parallax-stage reveal">${cards}</div></div></section>`;
+}
+
+function buildUnderTheHood(p) {
+  const snippets = p.codeSnippets ?? { html: `<section id="hero"><h1>${p.title}</h1></section>`, css: `:root { --accent: ${p.accent}; }`, js: `console.log("${p.repo}");` };
+  const scores = p.pageSpeedScores ?? { perf: 95, a11y: 90, seo: 98 };
+  const tabs = [{ id: "html", label: "HTML" }, { id: "css", label: "CSS" }, { id: "js", label: "JS" }];
+  const panes = tabs.map((t, i) => `<pre class="code-pane${i === 0 ? " is-active" : ""}" data-pane="${t.id}"><code>${highlightCode(snippets[t.id] ?? "", t.id)}</code></pre>`).join("");
+  const tabBtns = tabs.map((t, i) => `<button type="button" class="code-tab${i === 0 ? " is-active" : ""}" data-tab="${t.id}">${t.label}</button>`).join("");
+  const ring = (label, score) => { const offset = 251.2 - (score / 100) * 251.2; return `<div class="ps-ring-wrap"><div class="ps-ring" data-score="${score}" style="--ps-offset:${offset}"><svg viewBox="0 0 88 88" aria-hidden="true"><circle class="ps-ring-bg" cx="44" cy="44" r="40"/><circle class="ps-ring-fill" cx="44" cy="44" r="40"/></svg><span class="ps-ring-val">0</span></div><span class="ps-ring-label">${label}</span></div>`; };
+  return `<section class="section" id="under-the-hood"><div class="section-inner"><div class="reveal"><p class="eyebrow">Under the Hood</p><h2 class="section-title">Код и PageSpeed</h2><p class="lead">Фрагменты production-кода и Lighthouse-метрики.</p></div><div class="hood-grid"><div class="code-window reveal tilt-card"><div class="code-chrome"><span class="code-dot code-dot--r"></span><span class="code-dot code-dot--y"></span><span class="code-dot code-dot--g"></span><div class="code-tabs">${tabBtns}</div></div><div class="code-body">${panes}</div></div><aside class="pagespeed-panel reveal"><p class="eyebrow" style="margin-bottom:8px">Lighthouse</p><div class="pagespeed-rings">${ring("Performance", scores.perf)}${ring("Accessibility", scores.a11y)}${ring("SEO", scores.seo)}</div></aside></div></div></section>`;
+}
 
 /** @param {string} label */
 function figLabel(name) {
@@ -110,26 +164,28 @@ function imgTag(img, w = 1440, h = 900, opts = {}) {
 
 function phoneScrollFrame(img) {
   if (!img) return "";
-  return `<div class="phone-frame phone-frame--device"><div class="phone-notch"></div><div class="phone-screen phone-screen--scroll"><img src="${esc(img.src)}" alt="${esc(figLabel(img.name))}" class="phone-scroll-img lightbox-trigger" width="390" loading="lazy"/></div><div class="phone-bar"></div></div>`;
+  return `<div class="phone-scroll-wrap"><div class="phone-frame phone-frame--device"><div class="phone-notch"></div><div class="phone-screen phone-screen--scroll"><img src="${esc(img.src)}" alt="${esc(figLabel(img.name))}" class="phone-scroll-img lightbox-trigger" width="390" loading="lazy"/></div><div class="phone-bar"></div></div><button type="button" class="phone-scroll-btn" aria-label="Auto scroll"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg><span>Scroll demo</span></button></div>`;
 }
 
 /** @param {import('./presentation-data.mjs').Project} p @param {ReturnType<typeof categorizeMockups>} imgs */
-function buildCaseStudy(p, imgs) {
+function buildCaseStudy(p, imgs, mockups) {
   const live = Boolean(p.demoUrl && !p.demoUrl.includes("github.com"));
   const host = live ? new URL(p.demoUrl).hostname : p.repo + ".vercel.app";
   const palette = defaultPalette(p);
   const fontDisplay = p.fontDisplay ?? "Unbounded";
   const fontBody = p.fontBody ?? "Plus Jakarta Sans";
+  const cmp = resolveComparison(mockups, imgs, p);
+  const parallaxItems = imgs.sections.length > 0 ? imgs.sections : imgs.gallery.filter((m) => /section|desktop|hero/i.test(m.name)).slice(0, 4);
 
   const heroVisual = imgs.hero
-    ? `<div class="hero-visual reveal">${imgTag(imgs.hero)}</div>`
+    ? `<div class="hero-visual reveal tilt-card">${imgTag(imgs.hero)}</div>`
     : `<div class="placeholder-visual reveal"><p>Визуалы появятся после capture-скрипта.<br/><a href="${esc(p.githubUrl)}" target="_blank" rel="noopener noreferrer">GitHub → ${esc(p.repo)}</a></p></div>`;
 
   const galleryCards = (items) =>
     items
       .map(
         (m) =>
-          `<figure class="gallery-card"><img class="lightbox-trigger" src="${esc(m.src)}" alt="${esc(figLabel(m.name))}" width="1440" height="900" loading="lazy"/><figcaption>${esc(figLabel(m.name))}</figcaption></figure>`,
+          `<figure class="gallery-card tilt-card"><img class="lightbox-trigger" src="${esc(m.src)}" alt="${esc(figLabel(m.name))}" width="1440" height="900" loading="lazy"/><figcaption>${esc(figLabel(m.name))}</figcaption></figure>`,
       )
       .join("");
 
@@ -140,7 +196,7 @@ function buildCaseStudy(p, imgs) {
 
   const deviceGallery =
     imgs.desktop || imgs.mobile
-      ? `<div class="gallery-group reveal"><p class="gallery-label">Адаптив и устройства</p><div class="device-row device-row--dual">${imgs.desktop ? `<div class="browser-frame"><div class="browser-chrome"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><div class="url-bar">${esc(host)}</div></div>${imgTag(imgs.desktop)}</div>` : ""}${imgs.mobile ? phoneScrollFrame(imgs.mobile) : ""}</div></div>`
+      ? `<div class="gallery-group reveal"><p class="gallery-label">Адаптив и устройства</p><div class="device-showcase tilt-card reveal"><div class="device-showcase__grid-bg" aria-hidden="true"></div><div class="device-row device-row--dual device-showcase__stage">${imgs.desktop ? `<div class="device-showcase__browser" data-depth="0.04"><div class="browser-frame tilt-card"><div class="browser-chrome"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><div class="url-bar">${esc(host)}</div></div>${imgTag(imgs.desktop)}</div></div>` : ""}${imgs.mobile ? `<div class="device-showcase__phone" data-depth="0.08">${phoneScrollFrame(imgs.mobile)}</div>` : ""}</div></div></div>`
       : "";
 
   const swatches = palette
@@ -158,7 +214,7 @@ function buildCaseStudy(p, imgs) {
 <title>${esc(p.title)} — Case Study</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="../_assets/case-study.css"/>
 <style>${cssVars(p)}:root{--font-display:"${esc(fontDisplay)}",system-ui,sans-serif;--font-body:"${esc(fontBody)}",system-ui,sans-serif}</style>
 </head>
@@ -174,7 +230,7 @@ function buildCaseStudy(p, imgs) {
 <h1 class="display reveal">${esc(p.title)}</h1>
 <p class="lead reveal" style="margin-top:20px">${esc(p.tagline)}</p>
 <p class="lead reveal" style="margin-top:16px;font-size:1rem">${esc(p.overview.split(".")[0] + ".")}</p>
-<div class="hero-meta reveal">${p.techs.map((t) => `<span class="pill pill--accent">${esc(t)}</span>`).join("")}<span class="pill ${live ? "pill--live" : ""}">${live ? "● LIVE" : "○ CODE"}</span></div>
+<div class="hero-meta reveal stagger-parent">${p.techs.map((t, i) => `<span class="pill pill--accent stagger-item" style="--i:${i}">${esc(t)}</span>`).join("")}<span class="pill stagger-item ${live ? "pill--live" : ""}" style="--i:${p.techs.length}">${live ? "● LIVE" : "○ CODE"}</span></div>
 </div>
 ${heroVisual}
 </div>
@@ -193,6 +249,8 @@ ${heroVisual}
 </div>
 </section>
 
+${buildComparisonSection(cmp, p.comparisonTooltips)}
+
 <section class="section gallery-section" id="gallery">
 <div class="section-inner">
 <div class="reveal"><p class="eyebrow">Визуал</p><h2 class="section-title">Скриншоты и flow</h2><p class="lead">От главного концепта к внутренним страницам, мобильной версии и интерактивным модулям.</p></div>
@@ -200,6 +258,10 @@ ${sectionGallery}
 ${deviceGallery}
 </div>
 </section>
+
+${buildParallaxSection(parallaxItems)}
+
+${buildUnderTheHood(p)}
 
 <section class="section" id="problem-solution">
 <div class="section-inner">
@@ -221,8 +283,8 @@ ${deviceGallery}
 <section class="section cta-section" id="cta">
 <div class="section-inner cta-inner">
 <div class="reveal"><p class="eyebrow">Ссылки</p><h2 class="section-title">Демо и репозиторий</h2></div>
-<div class="link-stack reveal">${live ? `<a class="link-btn link-btn--primary" href="${esc(p.demoUrl)}" target="_blank" rel="noopener noreferrer">Запустить демо</a>` : ""}<a class="link-btn" href="${esc(p.githubUrl)}" target="_blank" rel="noopener noreferrer">GitHub → ${esc(p.repo)}</a></div>
-<p class="footer-note reveal">blackcraftlab · ${p.year} · ${esc(p.title)}</p>
+<div class="link-stack reveal stagger-parent">${live ? `<a class="link-btn link-btn--primary stagger-item" style="--i:0" href="${esc(p.demoUrl)}" target="_blank" rel="noopener noreferrer">Запустить демо</a>` : ""}<a class="link-btn stagger-item" style="--i:${live ? 1 : 0}" href="${esc(p.githubUrl)}" target="_blank" rel="noopener noreferrer">GitHub → ${esc(p.repo)}</a></div>
+<p class="footer-note reveal">${esc(p.repo)} · ${p.year} · ${esc(p.title)}</p>
 </div>
 </section>
 </main>
@@ -277,7 +339,7 @@ footer{text-align:center;margin-top:clamp(48px,6vw,72px);color:var(--muted);font
 <div class="wrap">
 <header>
 <h1>Портфолио · Case Studies</h1>
-<p>${items.length} премиальных scroll-кейсов · Awwwards-level · ${new Date().getFullYear()}</p>
+<p>${items.length} премиальных scroll-кейсов · comparison · parallax · code · ${new Date().getFullYear()}</p>
 </header>
 <div class="grid">${items
     .map((p) => {
@@ -287,16 +349,19 @@ footer{text-align:center;margin-top:clamp(48px,6vw,72px);color:var(--muted);font
       return `<a class="card" href="${esc(p.slug)}/index.html" style="--card-accent:${esc(p.accent)}">${thumb}<div class="card-body"><span class="card-type">${esc(p.type)}</span><h2>${esc(p.title)}</h2><p>${esc(p.tagline)}</p><div class="card-meta"><span>${p.hasDemo ? "● LIVE" : "○ CODE"}</span><span>${esc(p.language)}</span></div></div></a>`;
     })
     .join("")}</div>
-<footer>Scroll-based case studies · Plus Jakarta Sans + Unbounded</footer>
+<footer>comparison slider · parallax cascade · Under the Hood · lightbox · tilt</footer>
 </div>
 </body>
 </html>`;
 }
 
-// Write shared assets
+// Write shared assets (source: scripts/presentation-assets/)
+const ASSET_SRC = join(__dirname, "presentation-assets");
 await mkdir(ASSETS, { recursive: true });
-await writeFile(join(ASSETS, "case-study.css"), CASE_STUDY_CSS, "utf8");
-await writeFile(join(ASSETS, "case-study.js"), CASE_STUDY_JS, "utf8");
+const caseCss = await readFile(join(ASSET_SRC, "case-study.css"), "utf8");
+await writeFile(join(ASSETS, "case-study.css"), caseCss, "utf8");
+const caseJs = await readFile(join(ASSET_SRC, "case-study.js"), "utf8");
+await writeFile(join(ASSETS, "case-study.js"), caseJs, "utf8");
 
 const indexItems = [];
 let fileCount = 2;
@@ -306,7 +371,7 @@ for (const project of PROJECTS) {
   await mkdir(dir, { recursive: true });
   const mockups = await findMockups(project.slug, project.mockupDirs);
   const imgs = categorizeMockups(mockups);
-  const html = buildCaseStudy(project, imgs);
+  const html = buildCaseStudy(project, imgs, mockups);
   await writeFile(join(dir, "index.html"), html, "utf8");
   fileCount++;
   const thumbFile = imgs.hero?.name ?? imgs.gallery[0]?.name;
@@ -331,10 +396,18 @@ const manifest = {
   generatedAt: new Date().toISOString(),
   outputDir: OUT_ROOT,
   format: "scroll-case-study",
+  sectionOrder: ["hero","design-system","comparison","gallery","parallax","under-the-hood","problem-solution","metrics","cta"],
+  figmaFallback: "ponytail: no Figma PNG → live screenshot with CSS blur/desaturate as mockup layer",
   effects: [
     "gradient mesh background",
     "SVG noise texture",
     "scroll reveal (Intersection Observer)",
+    "image comparison slider",
+    "parallax cascade",
+    "code editor tabs + PageSpeed rings",
+    "lightbox zoom",
+    "phone scroll frame",
+    "3D tilt cards",
     "fade up + scale + blur reveal",
     "gallery hover (siblings blur/opacity)",
     "device frames (laptop + phone)",
