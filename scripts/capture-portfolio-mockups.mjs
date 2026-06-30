@@ -79,25 +79,40 @@ const PROJECTS = [
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 390, height: 844 };
+const SCROLLY_SLUGS = new Set(["villa-poseidon"]);
 
 /** @param {number} n */
 function pad(n) {
   return String(n).padStart(2, "0");
 }
 
-async function waitForSettle(page) {
-  await page.waitForLoadState("networkidle", { timeout: 30_000 }).catch(() => {});
-  await page.waitForTimeout(2000);
-  await page.evaluate(async () => {
-    const step = window.innerHeight;
+function parseOnly() {
+  const i = process.argv.indexOf("--only");
+  if (i >= 0 && process.argv[i + 1]) return process.argv[i + 1];
+  const arg = process.argv.find((a) => a.startsWith("--only="));
+  return arg ? arg.slice("--only=".length) : null;
+}
+
+async function waitForSettle(page, opts = {}) {
+  const deep = Boolean(opts.deep);
+  await page.waitForLoadState("networkidle", { timeout: deep ? 45_000 : 30_000 }).catch(() => {});
+  await page.waitForTimeout(deep ? 3500 : 2000);
+  await page.evaluate(async (isDeep) => {
+    const step = Math.max(window.innerHeight * 0.75, 420);
     const max = document.body.scrollHeight;
+    const delay = isDeep ? 220 : 100;
     for (let y = 0; y < max; y += step) {
       window.scrollTo(0, y);
-      await new Promise((r) => setTimeout(r, 100));
+      await new Promise((r) => setTimeout(r, delay));
+    }
+    if (isDeep) {
+      window.scrollTo(0, max);
+      await new Promise((r) => setTimeout(r, 900));
     }
     window.scrollTo(0, 0);
-  });
-  await page.waitForTimeout(600);
+    await new Promise((r) => setTimeout(r, 500));
+  }, deep);
+  await page.waitForTimeout(deep ? 1200 : 600);
 }
 
 /** @param {import('@playwright/test').Page} page */
@@ -145,7 +160,7 @@ async function shot(browser, url, viewport, outPath, opts = {}) {
     colorScheme: "dark",
   });
   const page = await ctx.newPage();
-  const res = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
+  const res = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
   const status = res?.status() ?? 0;
   if (status >= 400) {
     await ctx.close();
@@ -163,7 +178,7 @@ async function shot(browser, url, viewport, outPath, opts = {}) {
  * @param {string} dir
  * @param {number} startIdx
  */
-async function captureHome(browser, url, dir, startIdx) {
+async function captureHome(browser, url, dir, startIdx, opts = {}) {
   /** @type {string[]} */
   const files = [];
   let idx = startIdx;
@@ -174,12 +189,23 @@ async function captureHome(browser, url, dir, startIdx) {
     colorScheme: "dark",
   });
   const page = await ctx.newPage();
-  const res = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
+  const res = await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
   if ((res?.status() ?? 0) >= 400) {
     await ctx.close();
     return { files, nextIdx: idx, ok: false };
   }
-  await waitForSettle(page);
+  await waitForSettle(page, { deep: Boolean(opts.deep) });
+
+  if (opts.deep) {
+    await page.evaluate(() => {
+      const el =
+        document.querySelector("[data-hero], #hero, [id*='hero' i], main section, section") ||
+        document.querySelector("main > *");
+      if (el) el.scrollIntoView({ block: "start", behavior: "instant" });
+      else window.scrollTo(0, 0);
+    });
+    await page.waitForTimeout(1800);
+  }
 
   const hero = join(dir, `${pad(idx)}-hero.png`);
   await page.screenshot({ path: hero, type: "png" });
@@ -189,6 +215,7 @@ async function captureHome(browser, url, dir, startIdx) {
   const sections = await findSections(page);
   for (const sec of sections) {
     await scrollToSection(page, sec);
+    await page.waitForTimeout(opts.deep ? 900 : 350);
     const name = `${pad(idx)}-section-${sec.replace(/[^a-z0-9-]/gi, "-").toLowerCase()}.png`;
     await page.screenshot({ path: join(dir, name), type: "png" });
     files.push(name);
@@ -258,7 +285,14 @@ async function main() {
   /** @type {{ slug: string, reason: string }[]} */
   const failed = [];
 
-  for (const project of PROJECTS) {
+  const only = parseOnly();
+  const projects = only ? PROJECTS.filter((p) => p.slug === only) : PROJECTS;
+  if (only && !projects.length) {
+    console.error(`Unknown --only slug: ${only}`);
+    process.exit(1);
+  }
+
+  for (const project of projects) {
     console.log(`\n-> ${project.title}`);
     const dir = join(OUT, project.slug);
     await mkdir(dir, { recursive: true });
@@ -274,7 +308,7 @@ async function main() {
     /** @type {string[]} */
     const allFiles = [];
 
-    const homeCap = await captureHome(browser, home.url, dir, idx);
+    const homeCap = await captureHome(browser, home.url, dir, idx, { deep: SCROLLY_SLUGS.has(project.slug) });
     if (!homeCap.ok) {
       failed.push({ slug: project.slug, reason: "home capture failed" });
       continue;
