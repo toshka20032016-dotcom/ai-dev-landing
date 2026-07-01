@@ -49,6 +49,8 @@ const PROJECTS = [
     slug: "yandex-pet-day",
     title: "YANDEX PET DAY",
     tagline: "Conference landing",
+    scrollytelling: true,
+    sectionIds: ["speakers", "program", "register"],
     pages: [{ name: "home", url: "https://yandex-pet-day-opal.vercel.app/" }],
   },
   {
@@ -107,6 +109,15 @@ async function isScrollyAppReady(page) {
 
 /** Wait for WebGL/canvas preloaders (e.g. Villa Poseidon) before viewport crops. */
 async function waitForScrollyAppReady(page) {
+  const needsCanvasWait = await page.evaluate(() => {
+    const canvas = document.querySelector("canvas");
+    const pctEl = [...document.querySelectorAll("*")].find((el) =>
+      /^\d+%$/.test((el.textContent ?? "").trim()),
+    );
+    return Boolean(canvas && canvas.width >= 100 && pctEl);
+  });
+  if (!needsCanvasWait) return;
+
   const deadline = Date.now() + SCROLL.appReadyTimeoutMs;
   while (Date.now() < deadline) {
     if (await isScrollyAppReady(page)) {
