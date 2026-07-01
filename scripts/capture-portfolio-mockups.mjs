@@ -64,6 +64,8 @@ const PROJECTS = [
     slug: "villa-poseidon",
     title: "VILLA POSEIDON",
     tagline: "Scrollytelling villa landing",
+    scrollytelling: true,
+    sectionIds: ["investment-metrics", "amenities", "booking"],
     pages: [{ name: "home", url: "https://poseidon-villa.vercel.app/" }],
   },
   {
@@ -79,7 +81,43 @@ const PROJECTS = [
 
 const DESKTOP = { width: 1440, height: 900 };
 const MOBILE = { width: 390, height: 844 };
-const SCROLLY_SLUGS = new Set(["villa-poseidon"]);
+/** ponytail: scrollytelling sites need Lenis-aware scroll priming before viewport crops */
+const SCROLLY_SLUGS = new Set(PROJECTS.filter((p) => p.scrollytelling).map((p) => p.slug));
+
+const SCROLL = {
+  stepPx: 300,
+  stepMs: 500,
+  initialWaitMs: 4000,
+  settleTopMs: 2000,
+  sectionSettleMs: 2500,
+  appReadyTimeoutMs: 180_000,
+  appReadyPollMs: 1000,
+};
+
+/** @param {import('@playwright/test').Page} page */
+async function isScrollyAppReady(page) {
+  return page.evaluate(() => {
+    const canvas = document.querySelector("canvas");
+    const pctEl = [...document.querySelectorAll("*")].find((el) =>
+      /^\d+%$/.test((el.textContent ?? "").trim()),
+    );
+    return Boolean(canvas && canvas.width >= 1000 && !pctEl);
+  });
+}
+
+/** Wait for WebGL/canvas preloaders (e.g. Villa Poseidon) before viewport crops. */
+async function waitForScrollyAppReady(page) {
+  const deadline = Date.now() + SCROLL.appReadyTimeoutMs;
+  while (Date.now() < deadline) {
+    if (await isScrollyAppReady(page)) {
+      console.log(`  scrolly app ready (${Math.round((Date.now() - (deadline - SCROLL.appReadyTimeoutMs)) / 1000)}s)`);
+      await page.waitForTimeout(2000);
+      return;
+    }
+    await page.waitForTimeout(SCROLL.appReadyPollMs);
+  }
+  console.warn("  WARN — scrolly app ready timeout, continuing anyway");
+}
 
 /** @param {number} n */
 function pad(n) {
@@ -93,26 +131,89 @@ function parseOnly() {
   return arg ? arg.slice("--only=".length) : null;
 }
 
+/** @param {import('@playwright/test').Page} page */
+async function waitForRafSettle(page) {
+  await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      }),
+  );
+}
+
+/** @param {import('@playwright/test').Page} page @param {number} y */
+async function scrollToY(page, y) {
+  await page.evaluate((targetY) => {
+    const lenis =
+      /** @type {{ scrollTo?: (t: number | Element, o?: { immediate?: boolean }) => void } | undefined} */ (
+        window.lenis ?? window.__lenis
+      );
+    if (lenis?.scrollTo) lenis.scrollTo(targetY, { immediate: true });
+    else window.scrollTo({ top: targetY, left: 0, behavior: "instant" });
+  }, y);
+}
+
+/**
+ * Slow-scroll entire page to trigger Lenis/scrollytelling + lazy content, then settle at top.
+ * @param {import('@playwright/test').Page} page
+ * @param {{ stepPx?: number, stepMs?: number, initialWaitMs?: number, settleTopMs?: number }} [opts]
+ */
+async function slowScrollAndSettle(page, opts = {}) {
+  const stepPx = opts.stepPx ?? SCROLL.stepPx;
+  const stepMs = opts.stepMs ?? SCROLL.stepMs;
+  const initialWaitMs = opts.initialWaitMs ?? SCROLL.initialWaitMs;
+  const settleTopMs = opts.settleTopMs ?? SCROLL.settleTopMs;
+
+  await page.waitForLoadState("networkidle", { timeout: 45_000 }).catch(() => {});
+  await page.waitForTimeout(initialWaitMs);
+  await waitForScrollyAppReady(page);
+
+  const vp = page.viewportSize() ?? DESKTOP;
+  await page.mouse.move(Math.floor(vp.width / 2), Math.floor(vp.height / 2));
+
+  let maxY = await page.evaluate(() => {
+    const root = document.documentElement;
+    return Math.max(root.scrollHeight, document.body.scrollHeight) - window.innerHeight;
+  });
+
+  let pos = 0;
+  while (pos < maxY) {
+    await page.mouse.wheel(0, stepPx);
+    await page.waitForTimeout(stepMs);
+    pos += stepPx;
+    const nextMax = await page.evaluate(() => {
+      const root = document.documentElement;
+      return Math.max(root.scrollHeight, document.body.scrollHeight) - window.innerHeight;
+    });
+    if (nextMax > maxY) maxY = nextMax;
+  }
+
+  await scrollToY(page, maxY);
+  await page.waitForTimeout(1000);
+  await scrollToY(page, 0);
+  await page.waitForTimeout(settleTopMs);
+  await waitForRafSettle(page);
+}
+
+/** @param {import('@playwright/test').Page} page @param {{ deep?: boolean }} opts */
 async function waitForSettle(page, opts = {}) {
-  const deep = Boolean(opts.deep);
-  await page.waitForLoadState("networkidle", { timeout: deep ? 45_000 : 30_000 }).catch(() => {});
-  await page.waitForTimeout(deep ? 3500 : 2000);
-  await page.evaluate(async (isDeep) => {
+  if (opts.deep) {
+    await slowScrollAndSettle(page);
+    return;
+  }
+  await page.waitForLoadState("networkidle", { timeout: 30_000 }).catch(() => {});
+  await page.waitForTimeout(2000);
+  await page.evaluate(async () => {
     const step = Math.max(window.innerHeight * 0.75, 420);
     const max = document.body.scrollHeight;
-    const delay = isDeep ? 220 : 100;
     for (let y = 0; y < max; y += step) {
       window.scrollTo(0, y);
-      await new Promise((r) => setTimeout(r, delay));
-    }
-    if (isDeep) {
-      window.scrollTo(0, max);
-      await new Promise((r) => setTimeout(r, 900));
+      await new Promise((r) => setTimeout(r, 100));
     }
     window.scrollTo(0, 0);
     await new Promise((r) => setTimeout(r, 500));
-  }, deep);
-  await page.waitForTimeout(deep ? 1200 : 600);
+  });
+  await page.waitForTimeout(600);
 }
 
 /** @param {import('@playwright/test').Page} page */
@@ -133,17 +234,28 @@ async function findSections(page) {
   }, SECTION_IDS);
 }
 
-/** @param {import('@playwright/test').Page} page @param {string} sectionId */
-async function scrollToSection(page, sectionId) {
+/**
+ * @param {import('@playwright/test').Page} page
+ * @param {string} sectionId
+ * @param {{ settleMs?: number }} [opts]
+ */
+async function scrollToSection(page, sectionId, opts = {}) {
+  const settleMs = opts.settleMs ?? 500;
   await page.evaluate((id) => {
     const el =
       document.getElementById(id) ??
       document.querySelector(`[id="${id}"]`) ??
       [...document.querySelectorAll("section")][parseInt(id.replace("block-", ""), 10)];
-    if (el) el.scrollIntoView({ block: "start", behavior: "instant" });
+    const lenis =
+      /** @type {{ scrollTo?: (t: number | Element, o?: { immediate?: boolean; offset?: number }) => void } | undefined} */ (
+        window.lenis ?? window.__lenis
+      );
+    if (el && lenis?.scrollTo) lenis.scrollTo(el, { immediate: true, offset: 0 });
+    else if (el) el.scrollIntoView({ block: "start", behavior: "instant" });
     else window.scrollBy(0, window.innerHeight * 0.85);
   }, sectionId);
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(settleMs);
+  await waitForRafSettle(page);
 }
 
 /**
@@ -166,7 +278,7 @@ async function shot(browser, url, viewport, outPath, opts = {}) {
     await ctx.close();
     return false;
   }
-  await waitForSettle(page);
+  await waitForSettle(page, { deep: Boolean(opts.deep) });
   await page.screenshot({ path: outPath, fullPage: Boolean(opts.fullPage), type: "png" });
   await ctx.close();
   return true;
@@ -177,11 +289,14 @@ async function shot(browser, url, viewport, outPath, opts = {}) {
  * @param {string} url
  * @param {string} dir
  * @param {number} startIdx
+ * @param {{ deep?: boolean, sectionIds?: string[] }} [opts]
  */
 async function captureHome(browser, url, dir, startIdx, opts = {}) {
   /** @type {string[]} */
   const files = [];
   let idx = startIdx;
+  const deep = Boolean(opts.deep);
+  const sectionSettleMs = deep ? SCROLL.sectionSettleMs : 350;
 
   const ctx = await browser.newContext({
     viewport: DESKTOP,
@@ -194,17 +309,27 @@ async function captureHome(browser, url, dir, startIdx, opts = {}) {
     await ctx.close();
     return { files, nextIdx: idx, ok: false };
   }
-  await waitForSettle(page, { deep: Boolean(opts.deep) });
+  await waitForSettle(page, { deep });
 
-  if (opts.deep) {
+  await scrollToY(page, 0);
+  await page.waitForTimeout(deep ? SCROLL.settleTopMs : 600);
+  await waitForRafSettle(page);
+
+  if (deep) {
     await page.evaluate(() => {
       const el =
         document.querySelector("[data-hero], #hero, [id*='hero' i], main section, section") ||
         document.querySelector("main > *");
-      if (el) el.scrollIntoView({ block: "start", behavior: "instant" });
+      const lenis =
+        /** @type {{ scrollTo?: (t: Element, o?: { immediate?: boolean }) => void } | undefined} */ (
+          window.lenis ?? window.__lenis
+        );
+      if (el && lenis?.scrollTo) lenis.scrollTo(el, { immediate: true });
+      else if (el) el.scrollIntoView({ block: "start", behavior: "instant" });
       else window.scrollTo(0, 0);
     });
-    await page.waitForTimeout(1800);
+    await page.waitForTimeout(SCROLL.sectionSettleMs);
+    await waitForRafSettle(page);
   }
 
   const hero = join(dir, `${pad(idx)}-hero.png`);
@@ -212,10 +337,10 @@ async function captureHome(browser, url, dir, startIdx, opts = {}) {
   files.push(`${pad(idx)}-hero.png`);
   idx++;
 
-  const sections = await findSections(page);
+  const sections =
+    opts.sectionIds?.length ? opts.sectionIds : await findSections(page);
   for (const sec of sections) {
-    await scrollToSection(page, sec);
-    await page.waitForTimeout(opts.deep ? 900 : 350);
+    await scrollToSection(page, sec, { settleMs: sectionSettleMs });
     const name = `${pad(idx)}-section-${sec.replace(/[^a-z0-9-]/gi, "-").toLowerCase()}.png`;
     await page.screenshot({ path: join(dir, name), type: "png" });
     files.push(name);
@@ -230,7 +355,7 @@ async function captureHome(browser, url, dir, startIdx, opts = {}) {
   await ctx.close();
 
   const mobileFull = join(dir, `${pad(idx)}-mobile-full.png`);
-  const mobOk = await shot(browser, url, MOBILE, mobileFull, { fullPage: true });
+  const mobOk = await shot(browser, url, MOBILE, mobileFull, { fullPage: true, deep });
   if (mobOk) {
     files.push(`${pad(idx)}-mobile-full.png`);
     idx++;
@@ -308,7 +433,10 @@ async function main() {
     /** @type {string[]} */
     const allFiles = [];
 
-    const homeCap = await captureHome(browser, home.url, dir, idx, { deep: SCROLLY_SLUGS.has(project.slug) });
+    const homeCap = await captureHome(browser, home.url, dir, idx, {
+      deep: SCROLLY_SLUGS.has(project.slug),
+      sectionIds: project.sectionIds,
+    });
     if (!homeCap.ok) {
       failed.push({ slug: project.slug, reason: "home capture failed" });
       continue;
